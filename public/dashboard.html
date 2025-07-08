@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Dashboard</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      padding: 30px;
+    }
+    h2 {
+      color: #333;
+      text-align: center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .card-body {
+      padding: 15px;
+    }
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .card-desc {
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .card-price {
+      font-weight: bold;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+
+  <h2> Product Dashboard</h2>
+  <div class="grid" id="productGrid"></div>
+
+  <script>
+    $(document).ready(function () {
+      $.get('/api/item', function (res) {
+        if (res.status === 'success') {
+          let html = '';
+          res.data.forEach(item => {
+            html += `
+              <div class="card">
+               <img src="/uploads/${item.image || 'default.jpg'}"
+     onerror="this.onerror=null;this.src='/uploads/default.jpg';"
+     alt="${item.item_name}">
+                <div class="card-body">
+                  <div class="card-title">${item.item_name}</div>
+                  <div class="card-price">₱${parseFloat(item.sell_price).toFixed(2)}</div>
+                </div>
+              </div>`;
+          });
+          $('#productGrid').html(html);
+        } else {
+          $('#productGrid').html('<p>❌ Failed to load items.</p>');
+        }
+      }).fail(() => {
+        $('#productGrid').html('<p>❌ API error.</p>');
+      });
+    });
+  </script>
+
+</body>
+</html>
