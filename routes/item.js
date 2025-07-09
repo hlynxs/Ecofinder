@@ -1,14 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const itemController = require('../controllers/item');
 
-router.get('/', (req, res) => {
-  const sql = `SELECT item_name, sell_price, image FROM item WHERE deleted_at IS NULL`;
-
-  db.query(sql, (err, results) => {
-    if (err) return res.status(500).json({ error: err });
-    res.json({ status: 'success', data: results });
-  });
-});
+// Routes using the controller functions
+router.get('/', itemController.getAllItems);
+router.get('/category/:categoryId', itemController.getItemsByCategory);
 
 module.exports = router;

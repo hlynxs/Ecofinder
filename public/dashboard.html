@@ -14,6 +14,17 @@
   <!-- Page Content -->
   <main class="container mt-5">
     <h2> HOT WHEEL CARS </h2>
+    <div style="margin-bottom: 20px;">
+      <label for="categoryFilter">Filter by Category:</label>
+      <select id="categoryFilter">
+        <option value="">All</option>
+        <option value="1">RLC Exclusive</option>
+        <option value="2">RLC Membership</option>
+        <option value="3">F1 Series</option>
+        <option value="4">Elite 64</option>
+      </select>
+    </div>
+    
     <div class="grid" id="productGrid"></div>
   </main>
 
@@ -26,8 +37,12 @@
 
   <!-- Load Product Data -->
   <script>
-    $(document).ready(function () {
-      $.get('/api/item', function (res) {
+    function loadItems(categoryId = '') {
+      const url = categoryId 
+        ? `/api/item/category/${categoryId}` 
+        : `/api/item`;
+  
+      $.get(url, function (res) {
         if (res.status === 'success') {
           let html = '';
           res.data.forEach(item => {
@@ -50,19 +65,30 @@
       }).fail(() => {
         $('#productGrid').html('<p>❌ API error.</p>');
       });
+    }
   
-      // Handle Add to Cart button click
+    $(document).ready(function () {
+      $('#header').load('/header.html');
+      
+      loadItems(); // Load all on first load
+  
+      $('#categoryFilter').on('change', function () {
+        const selected = $(this).val();
+        loadItems(selected);
+      });
+  
+      // Optional: Add to cart handler
       $(document).on('click', '.add-to-cart-btn', function () {
         const product = {
           id: $(this).data('id'),
           name: $(this).data('name'),
           price: $(this).data('price')
         };
-  
-       
+        console.log('Add to cart:', product);
       });
     });
   </script>
+  
   
 
 </body>
