@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Complete Profile</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="/css/profile.css" />
+
+  
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2>Complete Your Profile</h2>
+    <img id="profileImagePreview" src="https://via.placeholder.com/120" alt="Profile Picture" />
+
+    <form id="profileForm" enctype="multipart/form-data">
+      <select name="title" id="title">
+        <option value="">Select Title</option>
+        <option value="Mr.">Mr.</option>
+        <option value="Ms.">Ms.</option>
+        <option value="Mrs.">Mrs.</option>
+      </select>
+      <input type="hidden" name="userId" id="userId" />
+      <input type="text" name="fname" id="fname" placeholder="First Name" required />
+      <input type="text" name="lname" id="lname" placeholder="Last Name" required />
+      <input type="text" name="addressline" id="addressline" placeholder="Address" />
+      <input type="text" name="town" id="town" placeholder="Town" />
+      <input type="text" name="phone" id="phone" placeholder="Phone" />
+      <input type="file" name="image" id="image" accept="image/*" />
+      <button type="submit">Save Profile</button>
+    </form>
+    <p id="profileMsg"></p>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      const userId = localStorage.getItem('userId');
+      if (!localStorage.getItem('token') || !userId) {
+        alert("You must be logged in first!");
+        window.location.href = '/login.html';
+        return;
+      }
+
+      $('#userId').val(userId);
+
+      // Load header first
+      $('#header').load('/header.html', function () {
+        // Dynamically adjust body padding after header loads
+        $('body').css('padding-top', $('#header').outerHeight() + 20 + 'px');
+        fetchProfileData(userId);
+      });
+
+      function fetchProfileData(userId) {
+        $.ajax({
+          url: `/api/users/customers/${userId}`,
+          method: 'GET',
+          success: function (res) {
+            if (res.success && res.data) {
+              const data = res.data;
+              $('#title').val(data.title || '');
+              $('#fname').val(data.fname || '');
+              $('#lname').val(data.lname || '');
+              $('#addressline').val(data.addressline || '');
+              $('#town').val(data.town || '');
+              $('#phone').val(data.phone || '');
+              if (data.image_path) {
+                $('#profileImagePreview').attr('src', `/${data.image_path}`);
+              }
+            }
+          },
+          error: function () {
+            console.warn('No profile found.');
+          }
+        });
+      }
+
+      // Image preview
+      $('#image').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+          $('#profileImagePreview').attr('src', URL.createObjectURL(file));
+        }
+      });
+
+      // Submit profile form
+      $('#profileForm').off('submit').on('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.set('userId', userId);
+
+        $.ajax({
+          url: '/api/users/update-profile',
+          method: 'POST',
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: function () {
+            $('#profileMsg').text('✅ Profile saved!').css('color', 'green');
+            fetchProfileData(userId);
+          },
+          error: function (err) {
+            $('#profileMsg').text('❌ Failed to save.').css('color', 'red');
+            console.error(err);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

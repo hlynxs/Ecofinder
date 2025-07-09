@@ -1,40 +1,32 @@
 const connection = require('../config/database');
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
+// ----------------- Register -----------------
 const registerUser = async (req, res) => {
-  // {
-  //   "name": "steve",
-  //   "email": "steve@gmail.com",
-  //   "password": "password"
-  // }
-  const { name, password, email, } = req.body;
+  const { name, password, email } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
   const userSql = 'INSERT INTO users (name, password, email) VALUES (?, ?, ?)';
+
   try {
     connection.execute(userSql, [name, hashedPassword, email], (err, result) => {
       if (err instanceof Error) {
         console.log(err);
-
-        return res.status(401).json({
-          error: err
-        });
+        return res.status(401).json({ error: err });
       }
 
-      return res.status(200).json({
-        success: true,
-        result
-      })
+      return res.status(200).json({ success: true, result });
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-
 };
 
+// ----------------- Login -----------------
 const loginUser = (req, res) => {
   const { email, password } = req.body;
   const sql = 'SELECT id, name, email, password FROM users WHERE email = ? AND deleted_at IS NULL';
+
   connection.execute(sql, [email], async (err, results) => {
     if (err) {
       console.log(err);
@@ -45,77 +37,104 @@ const loginUser = (req, res) => {
     }
 
     const user = results[0];
-
     const safePasswordHash = user.password.replace(/^\$2y\$/, '$2b$');
     const match = await bcrypt.compare(password, safePasswordHash);
+
     if (!match) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    // Remove password from response
     delete user.password;
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET,);
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
 
-    return res.status(200).json({
-      success: "welcome back",
-      user: results[0],
-      token
-    });
+    return res.status(200).json({ success: "welcome back", user, token });
   });
 };
 
+// ----------------- Create or Update Profile -----------------
 const updateUser = (req, res) => {
-  // {
-  //   "name": "steve",
-  //   "email": "steve@gmail.com",
-  //   "password": "password"
-  // }
-  console.log(req.body, req.file)
-  const { title, fname, lname, addressline, town, zipcode, phone, userId, } = req.body;
+  const { title, fname, lname, addressline, town, phone, userId } = req.body;
 
-  if (req.file) {
-    image = req.file.path.replace(/\\/g, "/");
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
   }
-  //     INSERT INTO users(user_id, username, email)
-  //   VALUES(1, 'john_doe', 'john@example.com')
-  // ON DUPLICATE KEY UPDATE email = 'john@example.com';
-  const userSql = `
-  INSERT INTO customer 
-    (title, fname, lname, addressline, town, zipcode, phone, image_path, user_id)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  ON DUPLICATE KEY UPDATE 
-    title = VALUES(title),
-    fname = VALUES(fname),
-    lname = VALUES(lname),
-    addressline = VALUES(addressline),
-    town = VALUES(town),
-    zipcode = VALUES(zipcode),
-    phone = VALUES(phone),
-    image_path = VALUES(image_path)`;
-  const params = [title, fname, lname, addressline, town, zipcode, phone, image, userId];
 
-  try {
-    connection.execute(userSql, params, (err, result) => {
-      if (err instanceof Error) {
-        console.log(err);
+  const image = req.file ? req.file.path.replace(/\\/g, "/").replace("public/", "") : null;
 
-        return res.status(401).json({
-          error: err
-        });
+  const checkSql = `SELECT customer_id FROM customer WHERE user_id = ?`;
+  connection.execute(checkSql, [userId], (checkErr, checkResult) => {
+    if (checkErr) {
+      console.log("Check customer error:", checkErr);
+      return res.status(500).json({ error: checkErr });
+    }
+
+    if (checkResult.length > 0) {
+      // ✅ Update profile
+      let updateSql, updateParams;
+
+      if (image) {
+        updateSql = `
+          UPDATE customer SET 
+            title = ?, 
+            fname = ?, 
+            lname = ?, 
+            addressline = ?, 
+            town = ?, 
+            phone = ?, 
+            image_path = ?
+          WHERE user_id = ?`;
+        updateParams = [title, fname, lname, addressline, town, phone, image, userId];
+      } else {
+        updateSql = `
+          UPDATE customer SET 
+            title = ?, 
+            fname = ?, 
+            lname = ?, 
+            addressline = ?, 
+            town = ?, 
+            phone = ?
+          WHERE user_id = ?`;
+        updateParams = [title, fname, lname, addressline, town, phone, userId];
       }
 
-      return res.status(200).json({
-        success: true,
-        message: 'profile updated',
-        result
-      })
-    });
-  } catch (error) {
-    console.log(error)
-  }
+      connection.execute(updateSql, updateParams, (updateErr, updateResult) => {
+        if (updateErr instanceof Error) {
+          console.log("Update error:", updateErr);
+          return res.status(500).json({ error: updateErr });
+        }
 
+        return res.status(200).json({
+          success: true,
+          message: 'Profile updated successfully.',
+          result: updateResult
+        });
+      });
+    } else {
+      // 🆕 Insert profile
+      const insertSql = `
+        INSERT INTO customer 
+          (title, fname, lname, addressline, town, phone, image_path, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+      const insertParams = [title, fname, lname, addressline, town, phone, image, userId];
+
+      connection.execute(insertSql, insertParams, (insertErr, insertResult) => {
+        if (insertErr instanceof Error) {
+          console.log("Insert error:", insertErr);
+          return res.status(500).json({ error: insertErr });
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: 'Profile created successfully.',
+          result: insertResult
+        });
+      });
+    }
+  });
 };
 
+// ----------------- Deactivate User -----------------
 const deactivateUser = (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -142,4 +161,17 @@ const deactivateUser = (req, res) => {
   });
 };
 
-module.exports = { registerUser, loginUser, updateUser, deactivateUser };
+// ----------------- Get Customer Profile -----------------
+const getCustomerProfile = (req, res) => {
+  const userId = req.params.userId;
+  const sql = 'SELECT * FROM customer WHERE user_id = ?';
+
+  connection.execute(sql, [userId], (err, results) => {
+    if (err) return res.status(500).json({ error: err });
+    if (results.length === 0) return res.status(404).json({ message: 'No profile found' });
+
+    return res.status(200).json({ success: true, data: results[0] });
+  });
+};
+
+module.exports = { registerUser, loginUser, updateUser, deactivateUser, getCustomerProfile };

@@ -13,28 +13,80 @@
 
 <!-- Custom CSS -->
 <style>
+   body {
+    padding-top: 70px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+  }
+
+  /* Navbar - Hot Wheels Style */
+  .navbar {
+    background: linear-gradient(90deg, #000000 0%, #1a1a1a 100%);
+    border-bottom: 3px solid #ff4500;
+  }
+
+  .navbar-brand {
+    color: #ffcc00 !important;
+    font-weight: bold;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px #ff4500;
+  }
+
+  .navbar-nav .nav-link {
+    color: #e54747 !important;
+    transition: color 0.3s ease;
+  }
+
+  .navbar-nav .nav-link:hover {
+    color: #ff4500 !important;
+  }
+
+  .dropdown-menu {
+    background-color: #1a1a1a;
+    border: 1px solid #ff4500;
+  }
+
+  .dropdown-item {
+    color: #ffffff;
+  }
+
+  .dropdown-item:hover {
+    background-color: #ff4500;
+    color: #fff;
+  }
+
+  /* Buttons */
   .btn-hw {
     background-color: #ff4500;
     color: white;
     border: none;
   }
+
   .btn-hw:hover {
     background-color: #e03e00;
   }
+
   .btn-hw-outline {
-    border: 1px solid #ff4500;
+    border: 2px solid #ff4500;
     color: #ff4500;
+    font-weight: bold;
   }
+
   .btn-hw-outline:hover {
     background-color: #ff4500;
     color: white;
   }
+
+  /* Profile image in nav */
   .profile-img {
     object-fit: cover;
+    border: 2px solid #ff4500;
+    box-shadow: 0 0 5px rgba(255, 69, 0, 0.6);
   }
 </style>
 
-<nav class="navbar navbar-expand-md navbar-dark shadow-sm bg-dark">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top shadow-sm">
   <div class="container">
     <a class="navbar-brand" href="/dashboard.html">
       <i class="fa-solid fa-fire-flame-curved me-1"></i> DRIFT N' DASH
@@ -96,20 +148,44 @@
 <script>
   function logoutUser() {
     localStorage.removeItem('token');
+    localStorage.removeItem('userId');
     location.href = '/login.html';
   }
 
   $(document).ready(function () {
     const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
 
-    if (token) {
+    if (token && userId) {
       $('#login-link, #register-link').addClass('d-none');
       $('#user-dropdown').removeClass('d-none');
-      // Optionally fetch user info via API and update #username and profile image
-      $('#username').text('USER');
+
+      // Fetch customer info
+      $.ajax({
+        url: `/api/users/customers/${userId}`,
+        method: 'GET',
+        success: function (res) {
+          if (res.success && res.data) {
+            const data = res.data;
+
+            // Update username
+            const fullName = `${data.fname || ''} ${data.lname || ''}`.trim();
+            $('#username').text(fullName || 'USER');
+
+            // Update profile image
+            if (data.image_path) {
+              $('.profile-img').attr('src', `/${data.image_path}`);
+            }
+          }
+        },
+        error: function () {
+          console.warn('Failed to load profile');
+        }
+      });
     } else {
       $('#login-link, #register-link').removeClass('d-none');
       $('#user-dropdown').addClass('d-none');
     }
   });
 </script>
+
