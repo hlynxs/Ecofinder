@@ -5,6 +5,7 @@ const itemRoutes = require('./routes/item');
 const dashboardRoutes = require('./routes/dashboard');
 const categoryRoutes = require('./routes/category');
 
+
 require('dotenv').config();
 
 const app = express();
@@ -20,5 +21,8 @@ app.use('/api/users', users);             // ✅ Users route
 app.use('/api/item', itemRoutes);         // ✅ Items route
 app.use('/api/dashboard', dashboardRoutes); // ✅ Dashboard route
 app.use('/api/category', categoryRoutes);
+
+//aAdmin
+
 
 module.exports = app;
