@@ -3,6 +3,7 @@ const cors = require('cors');
 const users = require('./routes/user'); // ✅ Import user routes
 const itemRoutes = require('./routes/item');
 const dashboardRoutes = require('./routes/dashboard');
+const categoryRoutes = require('./routes/category');
 
 require('dotenv').config();
 
@@ -18,5 +19,6 @@ app.use(express.static('public'));
 app.use('/api/users', users);             // ✅ Users route
 app.use('/api/item', itemRoutes);         // ✅ Items route
 app.use('/api/dashboard', dashboardRoutes); // ✅ Dashboard route
+app.use('/api/category', categoryRoutes);
 
 module.exports = app;
