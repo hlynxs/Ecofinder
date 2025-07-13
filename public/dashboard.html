@@ -70,33 +70,37 @@ function loadItems(categoryId = '') {
     if (res.status === 'success') {
       let html = '';
       res.data.forEach(item => {
-        const images = parseImages(item.images);
-        const uniqueCarouselId = `carousel-${item.item_id}`;
-        let imageHtml = '';
+  let images = parseImages(item.images);
 
-        if (images.length === 1) {
-          imageHtml = `
-            <img src="/uploads/${images[0]}" class="card-img-top img-fluid"
-                 onerror="this.style.display='none';">`;
-        } else if (images.length > 1) {
-          imageHtml = `
-            <div id="${uniqueCarouselId}" class="carousel slide" data-bs-ride="carousel">
-              <div class="carousel-inner">
-                ${images.map((img, idx) => `
-                  <div class="carousel-item ${idx === 0 ? 'active' : ''}">
-                    <img src="/uploads/${img}" class="d-block w-100"
-                         onerror="this.style.display='none';">
-                  </div>
-                `).join('')}
-              </div>
-              <button class="carousel-control-prev" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              </button>
-            </div>`;
-        }
+  // ✅ Deduplicate image paths
+  images = [...new Set(images)];
+
+  const uniqueCarouselId = `carousel-${item.item_id}`;
+  let imageHtml = '';
+
+  if (images.length === 1) {
+    imageHtml = `
+      <img src="/uploads/${images[0]}" class="card-img-top img-fluid"
+           onerror="this.style.display='none';">`;
+  } else if (images.length > 1) {
+    imageHtml = `
+      <div id="${uniqueCarouselId}" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          ${images.map((img, idx) => `
+            <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+              <img src="/uploads/${img}" class="d-block w-100"
+                   onerror="this.style.display='none';">
+            </div>
+          `).join('')}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
+      </div>`;
+  }
 
         html += `
           <div class="card product-card shadow-sm">

@@ -47,7 +47,15 @@ const loginUser = (req, res) => {
     delete user.password;
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
 
-    return res.status(200).json({ success: "welcome back", user, token });
+const updateSql = 'UPDATE users SET token = ? WHERE id = ?';
+connection.execute(updateSql, [token, user.id], (updateErr) => {
+  if (updateErr) {
+    console.log(updateErr);
+    return res.status(500).json({ error: 'Failed to save token', details: updateErr });
+  }
+
+  return res.status(200).json({ success: "welcome back", user, token });
+});
   });
 };
 
