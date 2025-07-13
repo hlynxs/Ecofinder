@@ -12,7 +12,8 @@ router.get('/admin', itemController.getAllItemsWithStock);
 router.get('/admin/:id', itemController.getSingleItem);
 
 // CREATE (single image)
-router.post('/admin', upload.single('image'), itemController.createItem);
+// item.js (routes)
+router.post('/admin', upload.array('images', 5), itemController.createItem);
 
 // UPDATE (multiple images)
 router.put('/admin/:id', upload.array('images', 5), itemController.updateItem);

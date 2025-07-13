@@ -155,8 +155,9 @@ const getSingleItem = (req, res) => {
 // Create item
 const createItem = (req, res) => {
   const { item_name, description, cost_price, sell_price, quantity, category_id } = req.body;
-  const mainImage = req.file ? req.file.filename : null;
-
+  const imageFiles = req.files || [];
+  const mainImage = imageFiles.length > 0 ? imageFiles[0].filename : null;
+  
   if (!item_name || !description || !cost_price || !sell_price || !quantity || !category_id) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
@@ -177,9 +178,10 @@ const createItem = (req, res) => {
       if (err2) return res.status(500).json({ error: 'Error inserting stock', details: err2 });
 
       // Only insert into item_images if file is provided
-      if (mainImage) {
-        const imgSql = `INSERT INTO item_images (item_id, image_path) VALUES (?, ?)`;
-        db.query(imgSql, [itemId, mainImage], (err3) => {
+      if (imageFiles.length > 0) {
+        const imgSql = `INSERT INTO item_images (item_id, image_path) VALUES ?`;
+        const imgValues = imageFiles.map(file => [itemId, file.filename]);
+        db.query(imgSql, [imgValues], (err3) => {      
           if (err3) return res.status(500).json({ error: 'Error saving image path', details: err3 });
           return res.status(201).json({ success: true, message: 'Item created with image', itemId });
         });
