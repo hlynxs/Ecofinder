@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    .checkout-card {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .checkout-card img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border-radius: 5px;
+      background: #fff;
+    }
+
+    .checkout-details {
+      flex-grow: 1;
+    }
+
+    .checkout-details h6 {
+      margin: 0;
+      font-weight: bold;
+    }
+
+    .checkout-details small {
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+<div class="container mt-4">
+  <h2 class="mb-4">Checkout</h2>
+
+  <!-- 🛍️ Product Cards -->
+  <div id="cartSummary"></div>
+
+  <!-- 🚚 Shipping & Totals -->
+  <form id="checkoutForm" class="mt-4">
+    <div class="mb-3">
+      <label for="shippingRegion" class="form-label">Select Shipping Region</label>
+      <select id="shippingRegion" class="form-select" required>
+        <option value="">-- Choose Region --</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <div><strong>Shipping Rate:</strong> ₱<span id="shippingRate">0.00</span></div>
+      <div><strong>Items Total:</strong> ₱<span id="itemsTotal">0.00</span></div>
+      <div><strong>Grand Total:</strong> ₱<span id="grandTotal">0.00</span></div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Confirm Order</button>
+  </form>
+</div>
+
+<script>
+let shippingRates = [];
+let checkoutCart = [];
+
+$(document).ready(function () {
+  // 🛒 Load selected cart items
+  checkoutCart = JSON.parse(localStorage.getItem('checkoutCart')) || [];
+
+  // 💰 Compute total
+  const itemsTotal = checkoutCart.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  $('#itemsTotal').text(itemsTotal.toFixed(2));
+  $('#grandTotal').text(itemsTotal.toFixed(2));
+
+  // 🎨 Display items as cards
+  let cartHtml = '';
+  checkoutCart.forEach(item => {
+    const subtotal = item.price * item.quantity;
+    cartHtml += `
+      <div class="checkout-card">
+        <img src="/uploads/${item.image_path}" alt="${item.name}">
+        <div class="checkout-details">
+          <h6>${item.name}</h6>
+          <small>Price: ₱${parseFloat(item.price).toFixed(2)}</small><br>
+          <small>Quantity: ${item.quantity}</small><br>
+          <strong>Subtotal: ₱${subtotal.toFixed(2)}</strong>
+        </div>
+      </div>`;
+  });
+  $('#cartSummary').html(cartHtml);
+
+  // 🚚 Load shipping regions
+  $.get('/api/orders/shipping', function (res) {
+    if (res.success && Array.isArray(res.data)) {
+      shippingRates = res.data;
+      res.data.forEach(region => {
+        $('#shippingRegion').append(`
+          <option value="${region.shipping_id}" data-rate="${region.rate}">
+            ${region.region} (₱${parseFloat(region.rate).toFixed(2)})
+          </option>
+        `);
+      });
+    }
+  });
+
+  // 🔁 Recalculate grand total when region changes
+  $('#shippingRegion').on('change', function () {
+    const selectedRate = parseFloat($(this).find(':selected').data('rate')) || 0;
+    $('#shippingRate').text(selectedRate.toFixed(2));
+    const newTotal = itemsTotal + selectedRate;
+    $('#grandTotal').text(newTotal.toFixed(2));
+  });
+
+  // ✅ Place order
+  $('#checkoutForm').on('submit', function (e) {
+    e.preventDefault();
+
+    const shipping_id = $('#shippingRegion').val();
+    if (!shipping_id) return alert("Please select a shipping region.");
+
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    const datePlaced = new Date().toISOString().split('T')[0];
+
+    // 🔄 Get actual customer_id using userId
+    $.get(`/api/users/customers/${userId}`, function (res) {
+      if (!res.success || !res.data || !res.data.customer_id) {
+        return alert("❌ Cannot place order. Please complete your profile first.");
+      }
+
+      const orderPayload = {
+        customer_id: res.data.customer_id,
+        date_placed: datePlaced,
+        shipping_id,
+        status: 'Pending',
+        items: checkoutCart
+      };
+
+      $.ajax({
+        url: '/api/orders',
+        method: 'POST',
+        contentType: 'application/json',
+        headers: { Authorization: `Bearer ${token}` },
+        data: JSON.stringify(orderPayload),
+        success: function (res) {
+  if (res.success) {
+    alert('✅ Order placed!');
+    
+    // ✅ Remove only checkoutCart items from full cart
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    const updatedCart = cart.filter(cartItem => {
+      return !checkoutCart.some(checkedOut => checkedOut.id === cartItem.id);
+    });
+
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    localStorage.removeItem('checkoutCart'); // ✅ Remove only temporary checkout items
+
+    window.location.href = '/orders.html';
+  } else {
+    alert('❌ Failed to place order.');
+  }
+}
+
+      });
+    });
+  });
+});
+</script>
+</body>
+</html>

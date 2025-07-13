@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Cart</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container mt-5">
+    <h2>Your Shopping Cart</h2>
+    <div id="cartContents"></div>
+
+    <div class="text-end mt-3">
+      <button class="btn btn-success" id="checkoutBtn">Proceed to Checkout</button>
+    </div>
+
+    <div id="checkoutPreview" class="mt-4 d-none">
+      <h4>Selected for Checkout</h4>
+      <div id="selectedItems"></div>
+    </div>
+  </div>
+
+  <script>
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      $('#cart-count').text(totalQty);
+    }
+
+    function renderCart() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  if (cart.length === 0) {
+    $('#cartContents').html('<div class="alert alert-info">Your cart is empty.</div>');
+    updateCartCount();
+    return;
+  }
+
+  let html = `
+    <table class="table table-bordered align-middle text-center">
+      <thead class="table-dark">
+        <tr>
+          <th>Select</th>
+          <th>Image</th>
+          <th>Item Name</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Subtotal</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  cart.forEach((item, index) => {
+    const quantity = item.quantity || 1;
+    const subtotal = parseFloat(item.price) * quantity;
+
+    html += `
+      <tr data-index="${index}">
+        <td><input type="checkbox" class="item-check" data-index="${index}"></td>
+        <td><img src="/uploads/${item.image_path}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: contain;"></td>
+        <td>${item.name}</td>
+        <td>₱${parseFloat(item.price).toFixed(2)}</td>
+        <td>
+          <input type="number" class="form-control quantity-input" data-index="${index}" value="${quantity}" min="1" style="width: 80px; margin: auto;">
+        </td>
+        <td class="item-subtotal">₱${subtotal.toFixed(2)}</td>
+        <td>
+          <button class="btn btn-danger btn-sm remove-btn" data-index="${index}">Remove</button>
+        </td>
+      </tr>`;
+  });
+
+  html += `</tbody></table>
+           <div id="selectedTotal" class="text-end fw-bold fs-5 mt-3">TOTAL: ₱0.00</div>`;
+
+  $('#cartContents').html(html);
+  updateCartCount();
+}
+
+
+    function recalculateTotal() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      let total = 0;
+
+      $('#cartContents tbody tr').each(function () {
+        const index = $(this).data('index');
+        const quantity = parseInt($(this).find('.quantity-select').val());
+        const price = parseFloat(cart[index].price);
+        const subtotal = quantity * price;
+
+        $(this).find('.item-subtotal').text('₱' + subtotal.toFixed(2));
+        total += subtotal;
+      });
+
+      $('#totalDisplay').text('TOTAL: ₱' + total.toFixed(2));
+    }
+
+    $(document).ready(function () {
+      $('#header').load('/header.html', function () {
+        renderCart();
+      });
+      $(document).on('change', '.item-check, .quantity-dropdown', function () {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let total = 0;
+
+  $('.item-check:checked').each(function () {
+    const index = $(this).data('index');
+    const qty = parseInt($(`.quantity-dropdown[data-index="${index}"]`).val());
+    const price = parseFloat(cart[index].price);
+    total += price * qty;
+  });
+
+  $('#selectedTotal').text(`TOTAL: ₱${total.toFixed(2)}`);
+});
+
+
+      // Update subtotal and total on quantity change
+$(document).on('input', '.quantity-input', function () {
+  const index = $(this).data('index');
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let newQty = parseInt($(this).val());
+
+  if (isNaN(newQty) || newQty < 1) newQty = 1;
+  cart[index].quantity = newQty;
+  localStorage.setItem('cart', JSON.stringify(cart));
+
+  const price = parseFloat(cart[index].price);
+  const subtotal = price * newQty;
+
+  // Update subtotal in table
+  $(this).closest('tr').find('.item-subtotal').text(`₱${subtotal.toFixed(2)}`);
+
+  // Recalculate selected total
+  recalculateSelectedTotal();
+  updateCartCount();
+});
+
+// Recalculate total on checkbox toggle
+$(document).on('change', '.item-check', function () {
+  recalculateSelectedTotal();
+});
+
+// Function to compute selected total
+function recalculateSelectedTotal() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let total = 0;
+
+  $('.item-check:checked').each(function () {
+    const index = $(this).data('index');
+    const qty = parseInt($(`.quantity-input[data-index="${index}"]`).val()) || 1;
+    const price = parseFloat(cart[index].price);
+    total += price * qty;
+  });
+
+  $('#selectedTotal').text(`TOTAL: ₱${total.toFixed(2)}`);
+}
+
+
+      // Remove item
+      $(document).on('click', '.remove-btn', function () {
+        const index = $(this).data('index');
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart.splice(index, 1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCart();
+      });
+
+      // Checkout
+      $('#checkoutBtn').click(function () {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const selected = [];
+
+  $('.item-check:checked').each(function () {
+    const index = $(this).data('index');
+    selected.push(cart[index]);
+  });
+
+  if (selected.length === 0) {
+    alert('Please select at least one item to checkout.');
+    return;
+  }
+
+  localStorage.setItem('checkoutCart', JSON.stringify(selected));
+  window.location.href = '/checkout.html'; // 🔁 redirect to form
+});
+    });
+  </script>
+</body>
+</html>

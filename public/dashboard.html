@@ -4,12 +4,11 @@
   <meta charset="UTF-8">
   <title>Product Dashboard</title>
 
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <style>
     .grid {
@@ -40,13 +39,13 @@
 </head>
 <body>
 
-  <!-- Load header -->
+  <!-- Header -->
   <div id="header"></div>
 
   <!-- Page Content -->
   <main class="container mt-5">
     <h2>HOT WHEEL CARS</h2>
-    <div style="margin-bottom: 20px;">
+    <div class="mb-3">
       <label for="categoryFilter">Filter by Category:</label>
       <select id="categoryFilter" class="form-select w-auto d-inline-block">
         <option value="">All</option>
@@ -70,37 +69,32 @@ function loadItems(categoryId = '') {
     if (res.status === 'success') {
       let html = '';
       res.data.forEach(item => {
-  let images = parseImages(item.images);
+        let images = parseImages(item.images);
+        images = [...new Set(images)]; // Deduplicate
 
-  // ✅ Deduplicate image paths
-  images = [...new Set(images)];
+        const uniqueCarouselId = `carousel-${item.item_id}`;
+        let imageHtml = '';
 
-  const uniqueCarouselId = `carousel-${item.item_id}`;
-  let imageHtml = '';
-
-  if (images.length === 1) {
-    imageHtml = `
-      <img src="/uploads/${images[0]}" class="card-img-top img-fluid"
-           onerror="this.style.display='none';">`;
-  } else if (images.length > 1) {
-    imageHtml = `
-      <div id="${uniqueCarouselId}" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-          ${images.map((img, idx) => `
-            <div class="carousel-item ${idx === 0 ? 'active' : ''}">
-              <img src="/uploads/${img}" class="d-block w-100"
-                   onerror="this.style.display='none';">
-            </div>
-          `).join('')}
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        </button>
-      </div>`;
-  }
+        if (images.length === 1) {
+          imageHtml = `<img src="/uploads/${images[0]}" class="card-img-top img-fluid" onerror="this.style.display='none';">`;
+        } else if (images.length > 1) {
+          imageHtml = `
+            <div id="${uniqueCarouselId}" class="carousel slide" data-bs-ride="carousel">
+              <div class="carousel-inner">
+                ${images.map((img, idx) => `
+                  <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                    <img src="/uploads/${img}" class="d-block w-100" onerror="this.style.display='none';">
+                  </div>
+                `).join('')}
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              </button>
+            </div>`;
+        }
 
         html += `
           <div class="card product-card shadow-sm">
@@ -118,10 +112,10 @@ function loadItems(categoryId = '') {
 
       $('#productGrid').html(html);
     } else {
-      $('#productGrid').html('<p> Failed to load items.</p>');
+      $('#productGrid').html('<p>❌ Failed to load items.</p>');
     }
   }).fail(() => {
-    $('#productGrid').html('<p> API error.</p>');
+    $('#productGrid').html('<p>⚠️ API error.</p>');
   });
 }
 
@@ -133,20 +127,28 @@ function loadCategories() {
         $filter.append(`<option value="${cat.category_id}">${cat.description}</option>`);
       });
     } else {
-      console.warn(' Failed to load categories.');
+      console.warn('⚠️ Failed to load categories.');
     }
   }).fail(() => {
-    console.error('Error fetching categories.');
+    console.error('⚠️ Error fetching categories.');
   });
 }
 
+function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  $('#cart-count').text(cart.length);
+}
+
 $(document).ready(function () {
+  // Load header first
   $('#header').load('/header.html', function () {
+    // Enable dropdown after header is loaded
     const dropdownTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
     dropdownTriggerList.map(function (dropdownTriggerEl) {
       new bootstrap.Dropdown(dropdownTriggerEl);
     });
 
+    // Handle user session display
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
 
@@ -166,35 +168,54 @@ $(document).ready(function () {
       });
     }
 
-    loadItems();
-    loadCategories();
-
-    $('#categoryFilter').on('change', function () {
-      const selected = $(this).val();
-      loadItems(selected);
-    });
+    updateCartCount();
   });
 
+  // Load items and categories
+  loadItems();
+  loadCategories();
+
+  // Handle category filter
+  $('#categoryFilter').on('change', function () {
+    const selected = $(this).val();
+    loadItems(selected);
+  });
+
+  // Add to cart
   $(document).on('click', '.add-to-cart-btn', function () {
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
 
-  if (!token || !userId) {
-    alert(' You must be logged in first!');
-    window.location.href = '/login.html'; // Optional: redirect to login
-    return;
-  }
+    if (!token || !userId) {
+      alert('You must be logged in first!');
+      window.location.href = '/login.html';
+      return;
+    }
 
-  const product = {
-    id: $(this).data('id'),
-    name: $(this).data('name'),
-    price: $(this).data('price')
-  };
+    const card = $(this).closest('.product-card');
+    const imagePath = card.find('img').first().attr('src')?.replace('/uploads/', '') || 'default.jpg';
 
-  console.log('🛒 Add to cart:', product);
-  // Proceed with cart logic here...
-});
+    const product = {
+      id: $(this).data('id'),
+      name: $(this).data('name'),
+      price: $(this).data('price'),
+      image_path: imagePath,
+      quantity: 1
+    };
 
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    const existingItem = cart.find(item => item.id === product.id);
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cart.push(product);
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    alert('✅ Item added to cart!');
+  });
 });
 </script>
 

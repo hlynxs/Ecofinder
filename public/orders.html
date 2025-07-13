@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Orders</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    .order-card {
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      background: #f9f9f9;
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px dashed #ccc;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+    }
+
+    .order-items {
+      margin-top: 10px;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+
+    .order-status {
+      font-weight: bold;
+    }
+
+    .order-status.Pending {
+      color: orange;
+    }
+
+    .order-status.Completed {
+      color: green;
+    }
+
+    .order-status.Cancelled,
+    .order-status.Rejected {
+      color: red;
+    }
+
+    .order-status.InProgress {
+      color: #0d6efd;
+    }
+  </style>
+</head>
+<body>
+
+    <div id="header"></div>
+
+
+<div class="container mt-4">
+  <h2 class="mb-4"> My Orders</h2>
+  <div id="ordersList"></div>
+</div>
+
+<script>
+$(document).ready(function () {
+  const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+
+  if (!token || !userId) {
+    alert('⛔ Please log in first.');
+    window.location.href = '/login.html';
+    return;
+  }
+
+  $('#header').load('/header.html', function () {
+    const dropdownTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+    dropdownTriggerList.map(function (dropdownTriggerEl) {
+      new bootstrap.Dropdown(dropdownTriggerEl);
+    });
+
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+
+    if (token && userId) {
+      $('#login-link, #register-link').addClass('d-none');
+      $('#user-dropdown').removeClass('d-none');
+
+      $.get(`/api/users/customers/${userId}`, function (res) {
+        if (res.success && res.data) {
+          const data = res.data;
+          const fullName = `${data.fname || ''} ${data.lname || ''}`.trim();
+          $('#username').text(fullName || 'USER');
+          if (data.image_path) {
+            $('.profile-img').attr('src', `/${data.image_path}`);
+          }
+        }
+      });
+    }
+    updateCartCount(); // ⬅ Add this line
+    loadItems();
+    loadCategories();
+
+    $('#categoryFilter').on('change', function () {
+      const selected = $(this).val();
+      loadItems(selected);
+    });
+  });
+  function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  $('#cart-count').text(cart.length);
+}
+  
+  // Fetch customer_id first
+  $.get(`/api/users/customers/${userId}`, function (profileRes) {
+    if (!profileRes.success || !profileRes.data.customer_id) {
+      return $('#ordersList').html('<p class="text-danger">⚠️ No customer profile found.</p>');
+    }
+
+    const customerId = profileRes.data.customer_id;
+
+    // Fetch orders
+    $.get(`/api/orders/customer/${customerId}`, function (res) {
+      if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
+        return $('#ordersList').html('<p class="text-muted">📝 You have no orders yet.</p>');
+      }
+
+      let html = '';
+
+      res.data.forEach(order => {
+        html += `
+          <div class="order-card">
+            <div class="order-header">
+              <div><strong>Status:</strong> <span class="order-status ${order.status.replace(/\s/g, '')}">${order.status}</span></div>
+            </div>
+            <div><strong>Date Placed:</strong> ${order.date_placed}</div>
+            <div><strong>Shipping:</strong> ${order.region} - ₱${parseFloat(order.rate).toFixed(2)}</div>
+            <div class="order-items">
+              <strong>Items:</strong>
+              <ul class="list-group mt-2">`;
+
+        order.items.forEach(item => {
+          html += `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              ${item.item_name} x ${item.quantity}
+              <span>₱${(item.quantity * item.price).toFixed(2)}</span>
+            </li>`;
+        });
+
+        html += `
+              </ul>
+            </div>
+          </div>`;
+      });
+
+      $('#ordersList').html(html);
+    });
+  });
+});
+</script>
+</body>
+</html>
