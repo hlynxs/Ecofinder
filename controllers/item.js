@@ -24,7 +24,7 @@ const getAllItems = (req, res) => {
 
   db.query(sql, (err, results) => {
     if (err) {
-      console.error('❌ SQL Error:', err.message);
+      console.error(' SQL Error:', err.message);
       return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 
@@ -320,7 +320,7 @@ const searchItems = (req, res) => {
 
   db.execute(sql, [searchTerm], (err, results) => {
     if (err) {
-      console.error("❌ Search SQL Error:", err.message);
+      console.error(" Search SQL Error:", err.message);
       return res.status(500).json({ status: 'error', message: err.message });
     }
 
@@ -340,9 +340,6 @@ const searchItems = (req, res) => {
 };
 
 
-// --------------------
-// EXPORTS
-// --------------------
 module.exports = {
   getAllItems,
   getItemsByCategory,

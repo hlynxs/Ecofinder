@@ -103,13 +103,13 @@ a:hover {
           contentType: 'application/json',
           data: JSON.stringify(formData),
           success: function(res) {
-  $('#loginMsg').text('✅ Login successful!').css('color', 'green');
+  $('#loginMsg').text(' Login successful!').css('color', 'green');
   localStorage.setItem('token', res.token);
   localStorage.setItem('userId', res.user.id); // Save user_id for use in profile
   window.location.href = 'profile.html'; // Redirect to profile page
           },
           error: function(err) {
-            $('#loginMsg').text('❌ Login failed. Check your credentials.').css('color', 'red');
+            $('#loginMsg').text(' Login failed. Check your credentials.').css('color', 'red');
             console.log(err);
           }
         });

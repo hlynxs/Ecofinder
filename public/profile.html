@@ -142,11 +142,11 @@
           contentType: false,
           processData: false,
           success: function () {
-            $('#profileMsg').text('✅ Profile saved!').css('color', 'green');
+            $('#profileMsg').text(' Profile saved!').css('color', 'green');
             fetchProfileData(userId);
           },
           error: function (err) {
-            $('#profileMsg').text('❌ Failed to save.').css('color', 'red');
+            $('#profileMsg').text(' Failed to save.').css('color', 'red');
             console.error(err);
           }
         });

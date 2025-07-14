@@ -26,6 +26,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"></script>
 </head>
 <body>
+
+  <div id="header"></div>
+
+
   <div class="container mt-4">
     <button type="button" class="btn btn-info mb-3" data-toggle="modal" data-target="#itemModal">
       Add Item
@@ -103,9 +107,15 @@
 
   <script>
     $(document).ready(function () {
+      $('#header').load('/header_admin.html', function () {
+          renderCart();
+        });
+
       const baseUrl = 'http://localhost:3000/api/item/admin'; // New endpoint to show all
       const categoryUrl = 'http://localhost:3000/api/category';
       const imageBaseUrl = 'http://localhost:3000/uploads/';
+
+
 
       $.get(categoryUrl, function (res) {
         if (res.success) {
@@ -199,7 +209,7 @@
     $('#qty').val(item.quantity);
     $('#category').val(item.category_id);
 
-    // ✅ Show all images, not just main one
+    //  Show all images, not just main one
     const images = [...new Set(item.all_images || [])]; // Deduplicate just in case
     const previews = images.map(img => `<img src="${imageBaseUrl}${img}" width="100" class="mr-2 mb-2" />`).join('');
     $('#itemPreview').html(previews);

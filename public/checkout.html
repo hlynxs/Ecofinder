@@ -131,7 +131,7 @@ $(document).ready(function () {
     // 🔄 Get actual customer_id using userId
     $.get(`/api/users/customers/${userId}`, function (res) {
       if (!res.success || !res.data || !res.data.customer_id) {
-        return alert("❌ Cannot place order. Please complete your profile first.");
+        return alert(" Cannot place order. Please complete your profile first.");
       }
 
       const orderPayload = {
@@ -150,9 +150,9 @@ $(document).ready(function () {
         data: JSON.stringify(orderPayload),
         success: function (res) {
   if (res.success) {
-    alert('✅ Order placed!');
+    alert(' Order placed!');
     
-    // ✅ Remove only checkoutCart items from full cart
+    // Remove only checkoutCart items from full cart
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
     const updatedCart = cart.filter(cartItem => {
@@ -160,11 +160,11 @@ $(document).ready(function () {
     });
 
     localStorage.setItem('cart', JSON.stringify(updatedCart));
-    localStorage.removeItem('checkoutCart'); // ✅ Remove only temporary checkout items
+    localStorage.removeItem('checkoutCart'); //  Remove only temporary checkout items
 
     window.location.href = '/orders.html';
   } else {
-    alert('❌ Failed to place order.');
+    alert(' Failed to place order.');
   }
 }
 

@@ -74,7 +74,7 @@
         data: JSON.stringify(formData),
         success: function (res) {
   // Optional: show a message briefly
-  $('#message').text(res.message || 'Registration successful ✅').css('color', 'green');
+  $('#message').text(res.message || 'Registration successful ').css('color', 'green');
 
   // Redirect after 1 second
   setTimeout(function () {
@@ -83,7 +83,7 @@
 },
 
         error: function (err) {
-          const msg = err.responseJSON?.error || '❌ Registration failed.';
+          const msg = err.responseJSON?.error || ' Registration failed.';
           $('#message').text(msg).css('color', 'red');
         }
       });

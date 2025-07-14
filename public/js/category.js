@@ -1,6 +1,10 @@
 $(document).ready(function () {
     const url = 'http://localhost:3000/';
 
+    $('#header').load('/header_admin.html', function () {
+        renderCart();
+      });
+
     // ✅ Initialize Categories DataTable once
     const table = $('#ctable').DataTable({
         ajax: {

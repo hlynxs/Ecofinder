@@ -1,4 +1,5 @@
-const db = require('../config/database'); // Your DB connection
+const db = require('../config/database'); 
+const sendEmail = require('../utils/sendEmail'); // ✅ correct import
 
 // 🚚 Get all shipping options
 const getShippingOptions = (req, res) => {
@@ -145,8 +146,77 @@ const getOrdersByCustomer = (req, res) => {
     });
   };
 
+  const updateOrderStatus = (req, res) => {
+    const { orderId } = req.params;
+    const { newStatus } = req.body;
+  
+    const sql = `UPDATE orderinfo SET status = ? WHERE orderinfo_id = ?`;
+    db.query(sql, [newStatus, orderId], (err, updateResult) => {
+      if (err) {
+        console.error('Update error:', err);
+        return res.status(500).json({ message: 'Database error' });
+      }
+  
+      if (updateResult.affectedRows === 0) {
+        return res.status(404).json({ message: 'Order not found.' });
+      }
+  
+      const getUserSql = `
+        SELECT u.email, u.name, o.orderinfo_id
+        FROM orderinfo o
+        JOIN users u ON o.customer_id = u.id
+        WHERE o.orderinfo_id = ?
+      `;
+  
+      db.query(getUserSql, [orderId], async (err, results) => {
+        if (err) {
+          console.error('Fetch error:', err);
+          return res.status(500).json({ message: 'Error getting user' });
+        }
+  
+        if (results.length === 0) {
+          return res.status(404).json({ message: 'User not found.' });
+        }
+  
+        const { email, name } = results[0];
+  
+        try {
+          await sendEmail({
+            email,
+            subject: `Your Order #${orderId} Status Updated`,
+            message: `
+              Hi ${name || 'Customer'},<br><br>
+              Your order <strong>#${orderId}</strong> has been updated to <strong>${newStatus}</strong>.<br>
+              Thank you for shopping with <strong>Drift n' Dash</strong>!<br><br>
+              Best regards,<br>
+              Drift n' Dash Team
+            `
+          });
+  
+          res.json({ message: 'Order updated and email sent.' });
+        } catch (emailErr) {
+          console.error('Email failed:', emailErr);
+          res.status(500).json({ message: 'Email sending failed.' });
+        }
+      });
+    });
+  };
+  
+
+  const updateOrderStatusGet = async (req, res) => {
+    const { orderId, newStatus } = req.params;
+  
+    // Reuse the existing logic by injecting into req.body
+    req.body = { newStatus };
+    return updateOrderStatus(req, res);
+  };
+  
+
 module.exports = {
   createOrder,
   getOrdersByCustomer,
-  getShippingOptions
+  getShippingOptions,
+  updateOrderStatus,
+   updateOrderStatusGet
+
 };

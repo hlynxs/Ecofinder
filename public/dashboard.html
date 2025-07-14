@@ -112,10 +112,10 @@ function loadItems(categoryId = '') {
 
       $('#productGrid').html(html);
     } else {
-      $('#productGrid').html('<p>❌ Failed to load items.</p>');
+      $('#productGrid').html('<p> Failed to load items.</p>');
     }
   }).fail(() => {
-    $('#productGrid').html('<p>⚠️ API error.</p>');
+    $('#productGrid').html('<p> API error.</p>');
   });
 }
 
@@ -127,10 +127,10 @@ function loadCategories() {
         $filter.append(`<option value="${cat.category_id}">${cat.description}</option>`);
       });
     } else {
-      console.warn('⚠️ Failed to load categories.');
+      console.warn(' Failed to load categories.');
     }
   }).fail(() => {
-    console.error('⚠️ Error fetching categories.');
+    console.error('Error fetching categories.');
   });
 }
 
@@ -214,7 +214,7 @@ $(document).ready(function () {
 
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
-    alert('✅ Item added to cart!');
+    alert(' Item added to cart!');
   });
 });
 </script>

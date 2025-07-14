@@ -71,7 +71,7 @@ $(document).ready(function () {
   const userId = localStorage.getItem('userId');
 
   if (!token || !userId) {
-    alert('⛔ Please log in first.');
+    alert(' Please log in first.');
     window.location.href = '/login.html';
     return;
   }
@@ -117,7 +117,7 @@ $(document).ready(function () {
   // Fetch customer_id first
   $.get(`/api/users/customers/${userId}`, function (profileRes) {
     if (!profileRes.success || !profileRes.data.customer_id) {
-      return $('#ordersList').html('<p class="text-danger">⚠️ No customer profile found.</p>');
+      return $('#ordersList').html('<p class="text-danger"> No customer profile found.</p>');
     }
 
     const customerId = profileRes.data.customer_id;
@@ -125,7 +125,7 @@ $(document).ready(function () {
     // Fetch orders
     $.get(`/api/orders/customer/${customerId}`, function (res) {
       if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
-        return $('#ordersList').html('<p class="text-muted">📝 You have no orders yet.</p>');
+        return $('#ordersList').html('<p class="text-muted">You have no orders yet.</p>');
       }
 
       let html = '';

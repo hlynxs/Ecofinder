@@ -107,8 +107,8 @@
 <div id="header">
   <nav class="navbar navbar-expand-md navbar-dark fixed-top shadow-sm">
     <div class="container-fluid px-3">
-      <a class="navbar-brand" href="/dashboard.html">
-        <i class="fa-solid fa-fire-flame-curved me-1"></i> DRIFT N' DASH
+      <a class="navbar-brand" href="/home_admin.html">
+        <i class="fa-solid fa-fire-flame-curved me-1"></i>ADMIN PANEL | DRIFT N' DASH
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
         <span class="navbar-toggler-icon"></span>
@@ -117,15 +117,14 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <!-- Left Nav -->
         <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link" href="/dashboard.html">HOME</a></li>
-          <li class="nav-item">
-            <a href="/cart.html" class="nav-link position-relative">
-              <i class="fa fa-shopping-cart"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">0</span>
-            </a>            
-          </li>
-          <li class="nav-item"><a class="nav-link" href="/orders.html">MY ORDERS</a></li>
-          <li class="nav-item"><a class="nav-link" href="/reviews.html">MY REVIEWS</a></li>
+          <li class="nav-item"><a class="nav-link" href="/home_admin.html">HOME</a></li>
+         
+          <li class="nav-item"><a class="nav-link" href="/user_orders.html"> USER ORDERS</a></li>
+          <li class="nav-item"><a class="nav-link" href="/item.html">ITEM </a></li>
+          <li class="nav-item"><a class="nav-link" href="/category.html">CATEGORY </a></li>
+          <li class="nav-item"><a class="nav-link" href="/user.html">USERS </a></li>
+
+
         </ul>
 
         <!-- Right Nav -->
@@ -173,18 +172,9 @@
   }
 
   function updateCartCount() {
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
-
-  if (!token || !userId) {
-    $('#cart-count').text(0); // Clear cart count if not logged in
-    return;
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    $('#cart-count').text(cart.length);
   }
-
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  $('#cart-count').text(cart.length);
-}
-
 
   $(document).ready(function () {
     const token = localStorage.getItem('token');
