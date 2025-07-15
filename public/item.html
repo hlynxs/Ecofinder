@@ -269,8 +269,8 @@
           }
         });
       });
-    });
-    $('#itable tbody').on('click', '.restoreBtn', function (e) {
+
+      $('#itable tbody').on('click', '.restoreBtn', function (e) {
   e.preventDefault();
   const id = $(this).data('id');
   Swal.fire({
@@ -286,7 +286,7 @@
         method: 'PATCH',
         success: function () {
           Swal.fire('Restored!', 'Item has been restored.', 'success');
-          $('#itable').DataTable().ajax.reload();
+          table.ajax.reload(null, false); // stays on same page
         },
         error: function (err) {
           console.error(err);
@@ -296,6 +296,9 @@
     }
   });
 });
+
+    });
+   
 
   </script>
 </body>
