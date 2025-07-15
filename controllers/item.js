@@ -12,9 +12,11 @@ const getAllItems = (req, res) => {
       i.item_name, 
       i.sell_price, 
       i.image AS main_image,
-      GROUP_CONCAT(ii.image_path) AS extra_images
+      GROUP_CONCAT(ii.image_path) AS extra_images,
+      s.quantity AS stock
     FROM item i
     LEFT JOIN item_images ii ON i.item_id = ii.item_id
+    LEFT JOIN stock s ON i.item_id = s.item_id
     WHERE i.deleted_at IS NULL
       AND i.category_id IN (
         SELECT category_id FROM category WHERE deleted_at IS NULL
@@ -35,13 +37,15 @@ const getAllItems = (req, res) => {
         item_id: row.item_id,
         item_name: row.item_name,
         sell_price: row.sell_price,
-        images: all
+        images: all,
+        stock: row.stock || 0
       };
     });
 
     res.json({ status: 'success', data: formatted });
   });
 };
+
 
 // Get items by category (public)
 const getItemsByCategory = (req, res) => {
@@ -53,9 +57,11 @@ const getItemsByCategory = (req, res) => {
       i.item_name, 
       i.sell_price, 
       i.image AS main_image,
-      GROUP_CONCAT(ii.image_path) AS extra_images
+      GROUP_CONCAT(ii.image_path) AS extra_images,
+      s.quantity AS stock
     FROM item i
     LEFT JOIN item_images ii ON i.item_id = ii.item_id
+    LEFT JOIN stock s ON i.item_id = s.item_id
     WHERE i.deleted_at IS NULL 
       AND i.category_id = ? 
       AND i.category_id IN (
@@ -77,13 +83,15 @@ const getItemsByCategory = (req, res) => {
         item_id: row.item_id,
         item_name: row.item_name,
         sell_price: row.sell_price,
-        images: all
+        images: all,
+        stock: row.stock || 0
       };
     });
 
     res.json({ status: 'success', data: formatted });
   });
 };
+
 
 // --------------------
 // ADMIN FUNCTIONS

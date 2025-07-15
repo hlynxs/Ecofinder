@@ -97,17 +97,19 @@ function loadItems(categoryId = '') {
         }
 
         html += `
-          <div class="card product-card shadow-sm">
-            ${imageHtml}
-            <div class="card-body">
-              <h5 class="card-title">${item.item_name}</h5>
-              <p class="card-text">₱${parseFloat(item.sell_price).toFixed(2)}</p>
-              <button class="btn btn-primary add-to-cart-btn"
-                data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
-                Add to Cart
-              </button>
-            </div>
-          </div>`;
+  <div class="card product-card shadow-sm">
+    ${imageHtml}
+    <div class="card-body">
+      <h5 class="card-title">${item.item_name}</h5>
+      <p class="card-text">₱${parseFloat(item.sell_price).toFixed(2)}</p>
+      <p class="card-text">Stock: ${item.stock}</p>
+      <button class="btn btn-primary add-to-cart-btn"
+        data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
+        Add to Cart
+      </button>
+    </div>
+  </div>`;
+
       });
 
       $('#productGrid').html(html);
@@ -215,6 +217,13 @@ $(document).ready(function () {
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
     alert(' Item added to cart!');
+
+    const stock = parseInt($(this).closest('.product-card').find('.card-text:contains("Stock")').text().replace('Stock:', '').trim());
+if (stock <= 0) {
+  alert('This item is out of stock.');
+  return;
+}
+
   });
 });
 </script>
