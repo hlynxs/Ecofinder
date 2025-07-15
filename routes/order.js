@@ -1,21 +1,35 @@
 const express = require('express');
 const router = express.Router();
-const orderController = require('../controllers/order');
-const { updateOrderStatus } = require('../controllers/order');
+const {
+  createOrder,
+  getOrdersByCustomer,
+  getShippingOptions,
+  updateOrderStatus,
+  updateOrderStatusGet,
+  getAllOrdersForAdmin,
+  getOrderDetailsById,
+  softDeleteOrder,
+  restoreOrder,
+  getArchivedOrders,
+} = require('../controllers/order');
 
-// Create a new order
-router.post('/', orderController.createOrder);
+// ADMIN routes
+router.get('/admin', getAllOrdersForAdmin);
+router.put('/admin/:orderId/status', updateOrderStatus);
+router.delete('/admin/:orderId', softDeleteOrder);
+router.get('/admin/archived', getArchivedOrders);
+router.get('/admin/:orderId', getOrderDetailsById);
+router.put('/admin/:orderId/restore', restoreOrder); // ✅ if you want restore
 
-// Get orders by customer ID
-router.get('/customer/:customerId', orderController.getOrdersByCustomer);
 
-// Get shipping options (you can add this here or separate shipping routes)
-router.get('/shipping', orderController.getShippingOptions);
 
-router.put('/:orderId/status', orderController.updateOrderStatus);
+// CUSTOMER routes
+router.post('/', createOrder);
+router.get('/customer/:customerId', getOrdersByCustomer);
+router.get('/shipping', getShippingOptions);
 
-// Fallback GET route for browser-based testing
-router.get('/:orderId/status/:newStatus', orderController.updateOrderStatusGet);
-
+// Browser-based testing routes
+router.put('/:orderId/status', updateOrderStatus);
+router.get('/:orderId/status/:newStatus', updateOrderStatusGet);
 
 module.exports = router;

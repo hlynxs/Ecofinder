@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Archived Orders</title>
+
+  <!-- Bootstrap & DataTables -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.bootstrap4.min.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.min.css" />
+</head>
+<body>
+  <div class="container mt-4">
+    <div class="card">
+      <div class="card-header bg-secondary text-white">
+        <h4 class="mb-0">Archived Orders (Soft Deleted)</h4>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+            <a href="user_orders.html" class="btn btn-primary">
+              <i class="fas fa-arrow-left"></i> Back to Orders
+            </a>
+          </div>
+          
+        <table id="archivedTable" class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Date Placed</th>
+                  <th>Status</th>
+                  <th>Region</th>
+                  <th>Rate</th>
+                  <th>Restore</th>
+                </tr>
+              </thead>
+              
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.bootstrap4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    $(document).ready(function () {
+      const table = $('#archivedTable').DataTable({
+        ajax: {
+          url: '/api/orders/admin/archived', // ✅ Matches your Express route
+          dataSrc: 'data'
+        },
+        columns: [
+          { data: 'orderinfo_id' },
+          { data: 'customer_name' },
+          { data: 'date_placed' },
+          { data: 'status' },
+          { data: 'region' },
+          {
+            data: 'rate',
+            render: function (data) {
+              return `₱${parseFloat(data).toFixed(2)}`;
+            }
+          },
+          {
+            data: 'orderinfo_id',
+            render: function (data) {
+              return `<button class="btn btn-success restore-btn" data-id="${data}">Restore</button>`;
+            }
+          }
+        ]
+      });
+
+      // Restore button handler
+      $(document).on('click', '.restore-btn', function () {
+        const orderId = $(this).data('id');
+
+        Swal.fire({
+          title: 'Restore this order?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, Restore'
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const res = await fetch(`/api/orders/admin/${orderId}/restore`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' }
+              });
+
+              const data = await res.json();
+
+              if (res.ok && data.success) {
+                Swal.fire('Restored!', 'Order has been restored.', 'success');
+                table.ajax.reload();
+              } else {
+                throw new Error(data.message || 'Failed to restore order');
+              }
+            } catch (err) {
+              Swal.fire('Error', err.message, 'error');
+            }
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

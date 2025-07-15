@@ -5,18 +5,31 @@
   <meta charset="utf-8" />
   <title>Orders Management</title>
   <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+  integrity="sha512-pbQgB94TP8t0uhrWD61FmuqtnuhEv1FvOfEXfOYzgkUoD7GgQul1XJ+OaKXUJ3+e/9d4MFUMzF3cuupJUXTtXg==" 
+  crossorigin="anonymous" referrerpolicy="no-referrer" />
+ 
+
+
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
 
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.bootstrap4.min.css"
-    integrity="sha512-PT0RvABaDhDQugEbpNMwgYBCnGCiTZMh9yOzUsJHDgl/dMhD9yjHAwoumnUk3JydV3QTcIkNDuN40CJxik5+WQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet" />
-  <link href="https://cdn.datatables.net/buttons/2.3.5/css/buttons.dataTables.min.css" rel="stylesheet" />
+     <link rel="stylesheet"
+       href="https://cdn.datatables.net/buttons/1.6.5/css/buttons.bootstrap4.min.css"
+    
+       integrity="sha512-vWTrt2A9iAn2pK8hNZS26YZRDDUvLiOfyL+MmBEXJizrigtxnpLuLrLOOMm+pcrUJFzGssUwoS6Gofp+TT2deQ=="
+       crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+     <link rel="stylesheet"
+       href="https://cdn.datatables.net/buttons/1.6.5/css/buttons.bootstrap4.min.css"
+       integrity="sha512-U93Ait+5t0t8UxFrYkC8pW9VzNwLO5IZAQd+uhAwemeIjarwtk8uaX1Seku+q2CTMxLmLQsbeQuS4nyosLVUrg=="
+       crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
 
   <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons-bs5/2.3.6/buttons.bootstrap5.min.css"
+  href="https://cdn.datatables.net/buttons/1.6.5/css/buttons.bootstrap4.min.css"
+
     integrity="sha512-vWTrt2A9iAn2pK8hNZS26YZRDDUvLiOfyL+MmBEXJizrigtxnpLuLrLOOMm+pcrUJFzGssUwoS6Gofp+TT2deQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -52,8 +65,6 @@
     integrity="sha512-LGHBR+kJ5jZSIzhhdfytPoEHzgaYuTRifq9g5l6ja6/k9NAOsAi5dQh4zQF6JIRB8cAYxTRedERUF+97/KuivQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-  <script src="/js/order.js"></script>
-  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
@@ -87,7 +98,7 @@
                 <th>Date Placed</th>
                 <th>Date Shipped</th>
                 <th>Date Delivered</th>
-                <th>Shipping Method</th>
+                <th>Shipping Region</th>
                 <th>Status</th>
                 <!-- <th>Total Items</th> -->
                 <th>Actions</th>
@@ -138,13 +149,41 @@
     $(document).ready(async function () {
     const API_BASE_URL = 'http://localhost:3000';
     
+    $('#header').load('/header_admin.html', function () {
+          renderCart();
+        });
+
+
+
     const otable = $('#otable').DataTable({
          ajax: {
           url: `${API_BASE_URL}/api/orders/admin`,
           dataSrc: 'data'
         },
         dom: 'Bfrtip',
-        buttons: ['pdf', 'excel'],
+        
+    buttons: [
+  {
+    extend: 'pdf',
+    text: '<i class="fas fa-file-pdf"></i> PDF',
+    className: 'btn btn-outline-danger'
+  },
+  {
+    text: '<i class="fas fa-archive"></i> Archived Orders',
+    className: 'btn btn-outline-secondary',
+    action: function () {
+      // Redirect or show archived orders modal/table
+      window.location.href = '/archived_orders.html'; // or use a modal if you have one
+    }
+  },
+  {
+    extend: 'excel',
+    text: '<i class="fas fa-file-excel"></i> Excel',
+    className: 'btn btn-outline-success'
+  }
+],
+
+
         columns: [
             { data: 'orderinfo_id'},
             { data: 'customer_name'},
@@ -194,15 +233,18 @@
                 render: function(data, type, row) {
                     return `
                         <div class="btn-group" role="group">
-                            <button class="btn btn-sm btn-primary view-order" data-id="${row.orderinfo_id}">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            <button class="btn btn-sm btn-warning edit-order" data-id="${row.orderinfo_id}">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
+                        <button class="btn btn-sm btn-primary view-order" data-id="${row.orderinfo_id}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-warning edit-order" data-id="${row.orderinfo_id}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-order" data-id="${row.orderinfo_id}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
                         </div>
                     `;
-                },
+                    },
                 orderable: false
             }
         ],
@@ -290,7 +332,7 @@
                                         <h6>Shipping Information</h6>
                                         <table class="table table-sm">
                                             <tr>
-                                                <td><strong>Shipping Method:</strong></td>
+                                                <td><strong>Shipping Region:</strong></td>
                                                 <td id="modal-shipping-method"></td>
                                             </tr>
                                             <tr>
@@ -366,7 +408,7 @@
     const total = subtotal + shippingRate;
     
     // Shipping information
-    $('#modal-shipping-method').text(orderData.shipping_method || 'N/A');
+    $('#modal-shipping-method').text(orderData.shipping_region || 'N/A');
     $('#modal-shipping-rate').text(`₱${shippingRate.toFixed(2)}`);
     $('#modal-subtotal').text(`₱${subtotal.toFixed(2)}`);
     $('#modal-total').text(`₱${total.toFixed(2)}`);
@@ -473,10 +515,7 @@
 
     // Edit order status
 $(document).on('click', '.edit-order', async function() {
-    $('#header').load('/header_admin.html', function () {
-          renderCart();
-        });
-
+   
     const orderId = $(this).data('id');
     console.log('Edit order clicked, ID:', orderId);
 
@@ -618,5 +657,58 @@ $('#updateStatusButton').click(async function() {
     window.showOrderDetailsModal = showOrderDetailsModal;
     window.formatDate = formatDate;
     window.getStatusBadge = getStatusBadge;
+
+
+    // Soft delete order
+
+    $(document).on('click', '.delete-order', function () {
+  const orderId = $(this).data('id');
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'This order will be soft deleted. You can restore it later.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/orders/admin/${orderId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Failed to delete order');
+        }
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'The order has been soft deleted.'
+        });
+
+        $('#otable').DataTable().ajax.reload();
+      } catch (err) {
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err.message || 'An error occurred.'
+        });
+      }
+    }
+  });
 });
+
+
+});
+
+
+
 </script>
