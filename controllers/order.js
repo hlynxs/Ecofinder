@@ -16,8 +16,11 @@ const getShippingOptions = (req, res) => {
 };
 
 // 🧾 Create an order
-const createOrder = (req, res) => {
-  const { customer_id, date_placed, shipping_id, status, items } = req.body;
+  const createOrder = (req, res) => {
+  
+  const { customer_id, shipping_id, status, items } = req.body;
+  const date_placed = new Date(); 
+
 
   if (!customer_id || !date_placed || !shipping_id || !items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ success: false, message: 'Missing or invalid order data' });
@@ -157,8 +160,11 @@ const createOrder = (req, res) => {
                     await sendEmail({
                       email,
                       subject: `Drift n' Dash - Order #${orderinfo_id} Confirmation`,
-                      message
+                      message,
+                      attachPdf: true,
+                      pdfFilename: `Order_${orderinfo_id}_Receipt.pdf`
                     });
+                    
 
                     res.json({ success: true, message: 'Order created and email sent.', orderinfo_id });
                   } catch (emailErr) {
@@ -260,15 +266,28 @@ const getOrdersByCustomer = (req, res) => {
     if (!newStatus) {
       return res.status(400).json({ success: false, message: 'Status is required' });
     }
-  
+    let dateShipped = null;
+    let dateDelivered = null;
+    
+    if (newStatus.toLowerCase() === 'shipped') {
+      dateShipped = new Date();
+    } else if (newStatus.toLowerCase() === 'delivered') {
+      dateDelivered = new Date();
+    }
+    
+
     const updateSql = `
-    UPDATE orderinfo 
-    SET status = ?, deleted_at = NULL 
-    WHERE orderinfo_id = ? AND deleted_at IS NULL
+   UPDATE orderinfo 
+SET status = ?, 
+    date_shipped = IF(? IS NOT NULL, ?, date_shipped), 
+    date_delivered = IF(? IS NOT NULL, ?, date_delivered),
+    deleted_at = NULL 
+WHERE orderinfo_id = ? AND deleted_at IS NULL
+
   `;
   
   
-    db.query(updateSql, [newStatus, orderId], (err, updateResult) => {
+  db.query(updateSql, [ newStatus, dateShipped, dateShipped, dateDelivered, dateDelivered, orderId ], (err, updateResult) => {
       if (err) {
         console.error('Update error:', err);
         return res.status(500).json({ success: false, message: 'Database error during update' });
@@ -371,8 +390,11 @@ const getOrdersByCustomer = (req, res) => {
             await sendEmail({
               email,
               subject: `Your Order #${orderId} Status: ${newStatus}`,
-              message: messageHtml
+              message: messageHtml,
+              attachPdf: true,
+              pdfFilename: `Order_${orderId}_Status_${newStatus}.pdf`
             });
+            
   
             return res.json({
               success: true,
@@ -396,7 +418,7 @@ const getOrdersByCustomer = (req, res) => {
     const { orderId, newStatus } = req.params;
   
     // Reuse the existing logic by injecting into req.body
-    req.body = { newStatus };
+    req.body = { status: newStatus }; 
     return updateOrderStatus(req, res);
   };
 
@@ -405,15 +427,17 @@ const getOrdersByCustomer = (req, res) => {
   const getAllOrdersForAdmin = (req, res) => {
     const sql = `
       SELECT 
-        o.orderinfo_id,
-        CONCAT(c.fname, ' ', c.lname) AS customer_name,
-        o.date_placed,
-        o.status,
-        s.region,
-        s.rate
-      FROM orderinfo o
-      JOIN customer c ON o.customer_id = c.customer_id
-      JOIN shipping s ON o.shipping_id = s.shipping_id
+      o.orderinfo_id,
+      CONCAT(c.fname, ' ', c.lname) AS customer_name,
+      o.date_placed,
+      o.date_shipped,          -- ✅ add this
+      o.date_delivered,        -- ✅ add this
+      o.status,
+      s.region,
+      s.rate
+    FROM orderinfo o
+    JOIN customer c ON o.customer_id = c.customer_id
+    JOIN shipping s ON o.shipping_id = s.shipping_id
     WHERE o.deleted_at IS NULL
     ORDER BY o.date_placed DESC
   `;
