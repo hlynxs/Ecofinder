@@ -1,19 +1,156 @@
 const connection = require('../config/database');
 
 exports.createReview = (req, res) => {
-    const { orderinfo_id, customer_id, item_id, rating, review_text } = req.body;
+  const { orderinfo_id, customer_id, item_id, rating, review_text } = req.body;
+
+  if (!orderinfo_id || !customer_id || !item_id || !rating) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields.",
+    });
+  }
+
+  const sql = `
+    INSERT INTO reviews (orderinfo_id, customer_id, item_id, rating, review_text, created_at)
+    VALUES (?, ?, ?, ?, ?, NOW())
+  `;
+
+  connection.query(sql, [orderinfo_id, customer_id, item_id, rating, review_text], (err, result) => {
+    if (err) {
+      console.error("Failed to insert review:", err);
+      return res.status(500).json({ success: false, message: "Failed to submit review." });
+    }
+
+    res.json({ success: true, message: "Review submitted successfully!" });
+  });
+};
+
+
+  exports.getReviewsByCustomer = (req, res) => {
+    const customerId = req.params.id;
   
     const sql = `
-      INSERT INTO reviews (orderinfo_id, customer_id, item_id, rating, review_text, created_at)
-      VALUES (?, ?, ?, ?, ?, NOW())
+      SELECT 
+        r.review_id,
+        r.orderinfo_id,     -- <-- ADD THIS
+        r.item_id,          -- <-- AND THIS
+        r.rating,
+        r.review_text,
+        r.created_at,
+        i.item_name
+      FROM reviews r
+      JOIN item i ON r.item_id = i.item_id
+      WHERE r.customer_id = ?
+      ORDER BY r.created_at DESC
     `;
   
-    db.query(sql, [orderinfo_id, customer_id, item_id, rating, review_text], (err, result) => {
+    connection.query(sql, [customerId], (err, results) => {
       if (err) {
-        console.error("Failed to insert review:", err);
-        return res.status(500).json({ success: false, message: "Failed to submit review." });
+        console.error("Failed to fetch reviews:", err);
+        return res.status(500).json({ success: false, message: "Failed to load reviews." });
       }
   
-      res.json({ success: true, message: "Review submitted successfully!" });
+      res.json({ success: true, data: results });
     });
   };
+  
+
+exports.checkReviewExists = (req, res) => {
+  const { customer_id, orderinfo_id, item_id } = req.query;
+
+  const sql = `
+    SELECT 1 FROM reviews 
+    WHERE customer_id = ? AND orderinfo_id = ? AND item_id = ? 
+    LIMIT 1
+  `;
+
+  connection.query(sql, [customer_id, orderinfo_id, item_id], (err, results) => {
+    if (err) {
+      console.error('Check review exists error:', err);
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+
+    res.json({ success: true, reviewed: results.length > 0 });
+  });
+};
+
+exports.updateReview = (req, res) => {
+  const { review_id } = req.params;
+  const { rating, review_text } = req.body;
+
+  const sql = `
+    UPDATE reviews 
+    SET rating = ?, review_text = ?, updated_at = NOW()
+    WHERE review_id = ?
+  `;
+
+  connection.query(sql, [rating, review_text, review_id], (err, result) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, message: 'Review updated successfully' });
+  });
+};
+
+exports.getReviewById = (req, res) => {
+  const { review_id } = req.params;
+
+  const sql = `
+    SELECT * FROM reviews
+    WHERE review_id = ?
+  `;
+
+  connection.query(sql, [review_id], (err, results) => {
+    if (err) {
+      console.error('Failed to fetch review:', err);
+      return res.status(500).json({ success: false, message: 'Failed to fetch review' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ success: false, message: 'Review not found' });
+    }
+
+    res.json({ success: true, data: results[0] });
+  });
+};
+
+
+exports.deleteReview = (req, res) => {
+  const { review_id } = req.params;
+
+  const sql = `DELETE FROM reviews WHERE review_id = ?`;
+
+  connection.query(sql, [review_id], (err, result) => {
+    if (err) {
+      console.error("Failed to delete review:", err);
+      return res.status(500).json({ success: false, message: "Failed to delete review" });
+    }
+
+    res.json({ success: true, message: "Review deleted successfully" });
+  });
+};
+
+
+exports.getReviewsByItem = (req, res) => {
+  const { item_id } = req.params;
+
+  const sql = `
+    SELECT 
+      r.rating, 
+      r.review_text, 
+      r.created_at,
+      c.fname, 
+      c.lname
+    FROM reviews r
+    JOIN customer c ON r.customer_id = c.customer_id
+    WHERE r.item_id = ?
+    ORDER BY r.created_at DESC
+  `;
+
+  connection.query(sql, [item_id], (err, results) => {
+    if (err) {
+      console.error("Failed to fetch reviews for item:", err);
+      return res.status(500).json({ success: false, message: "Failed to load item reviews." });
+    }
+
+    res.json({ success: true, data: results });
+  });
+};

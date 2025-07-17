@@ -8,6 +8,7 @@ router.get('/', itemController.getAllItems);
 router.get('/category/:categoryId', itemController.getItemsByCategory);
 router.get('/search/:term', itemController.searchItems);
 
+
 // ADMIN ROUTES
 router.get('/admin', itemController.getAllItemsIncludingDeleted);
 router.get('/admin/:id', itemController.getSingleItem);
@@ -23,6 +24,8 @@ router.delete('/admin/:id', itemController.deleteItem);
 //restore
 router.patch('/admin/restore/:id', itemController.restoreItem);
 router.get('/admin/all', itemController.getAllItemsIncludingDeleted);
+
+router.get('/:id', itemController.getSingleItem); 
 
 
 

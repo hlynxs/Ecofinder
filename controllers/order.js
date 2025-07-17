@@ -221,41 +221,42 @@ const getOrdersByCustomer = (req, res) => {
       const placeholders = orderIds.map(() => '?').join(',');
   
       const itemSql = `
-        SELECT 
-          ol.orderinfo_id,
-          i.item_name,
-          i.sell_price AS price,
-          ol.quantity
-        FROM orderline ol
-        JOIN item i ON i.item_id = ol.item_id
-        WHERE ol.orderinfo_id IN (${placeholders})
-      `;
-  
-      db.query(itemSql, [...orderIds], (err, orderItems) => {
-        if (err) {
-          console.error("Error fetching order items:", err);
-          return res.status(500).json({ success: false, message: "Error fetching items" });
-        }
-  
-        // Group items by orderinfo_id
-        const grouped = {};
-        orderItems.forEach(item => {
-          if (!grouped[item.orderinfo_id]) grouped[item.orderinfo_id] = [];
-          grouped[item.orderinfo_id].push({
-            item_name: item.item_name,
-            quantity: item.quantity,
-            price: item.price
-          });
+      SELECT 
+        ol.orderinfo_id,
+        ol.item_id,
+        i.item_name,
+        i.sell_price AS price,
+        ol.quantity
+      FROM orderline ol
+      JOIN item i ON i.item_id = ol.item_id
+      WHERE ol.orderinfo_id IN (${placeholders})
+    `;
+      
+    db.query(itemSql, [...orderIds], (err, orderItems) => {
+      if (err) {
+        console.error("Error fetching order items:", err);
+        return res.status(500).json({ success: false, message: "Error fetching items" });
+      }
+    
+      // Group items by orderinfo_id
+      const grouped = {};
+      orderItems.forEach(item => {
+        if (!grouped[item.orderinfo_id]) grouped[item.orderinfo_id] = [];
+        grouped[item.orderinfo_id].push({
+          item_id: item.item_id,  // Make sure to include item_id here
+          item_name: item.item_name,
+          quantity: item.quantity,
+          price: item.price
         });
-  
-        // Attach items to orders
-        const final = orders.map(order => ({
-          ...order,
-          items: grouped[order.orderinfo_id] || []
-        }));
-  
-        res.json({ success: true, data: final });
       });
+    
+      // Attach items to orders
+      orders.forEach(order => {
+        order.items = grouped[order.orderinfo_id] || [];
+      });
+    
+      res.json({ success: true, data: orders });
+    });
     });
   };
 

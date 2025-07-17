@@ -56,6 +56,46 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 
+<style>
+
+  body {
+    padding-top: 80px; /* Same as header height */
+  }
+
+  #header {
+    height: 60px; /* Adjust based on actual header height */
+    background-color: #f8f9fa;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+  }
+
+  .main-container {
+    margin-top: 80px; /* or padding-top */
+  }
+
+  table.dataTable {
+    font-size: 14px;
+  }
+
+  /* Tighter spacing inside cells */
+  table.dataTable td,
+  table.dataTable th {
+    padding: 6px 8px !important;
+  }
+
+  /* Optional: shrink DataTable container */
+  .dataTables_wrapper {
+    font-size: 14px;
+    max-width: 100%;
+  }
+</style>
+
+
+  
+</style>
 <body>
   <div id="header"></div>
 

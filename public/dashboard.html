@@ -51,6 +51,36 @@
         <option value="">All</option>
       </select>
     </div>
+   
+   
+
+<!-- Modal begins here -->
+<div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productDetailLabel">Product Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6" id="modalImages">
+            <!-- Dynamic product images will go here -->
+          </div>
+          <div class="col-md-6">
+            <h4 id="modalItemName"></h4>
+            <p><strong>Price:</strong> ₱<span id="modalItemPrice"></span></p>
+            <p><strong>Stock:</strong> <span id="modalItemStock"></span></p>
+          </div>
+        </div>
+        <hr>
+        <h5>Customer Reviews</h5>
+        <div id="modalReviews"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
     <div class="grid" id="productGrid"></div>
   </main>
@@ -59,16 +89,26 @@
 function parseImages(imageField) {
   if (!imageField) return [];
   if (Array.isArray(imageField)) return imageField;
-  return [imageField];
+
+  try {
+    const parsed = JSON.parse(imageField);
+    return Array.isArray(parsed) ? parsed : [imageField];
+  } catch (e) {
+    if (typeof imageField === 'string') {
+      return imageField.split(',').map(s => s.trim());
+    }
+    return [imageField];
+  }
 }
 
 function loadItems(categoryId = '') {
   const url = categoryId ? `/api/item/category/${categoryId}` : `/api/item`;
 
   $.get(url, function (res) {
-    if (res.status === 'success') {
+    if (res.status === 'success' || res.success) {
       let html = '';
-      res.data.forEach(item => {
+      const items = res.data || res.items || [];
+      items.forEach(item => {
         let images = parseImages(item.images);
         images = [...new Set(images)]; // Deduplicate
 
@@ -97,39 +137,41 @@ function loadItems(categoryId = '') {
         }
 
         html += `
-  <div class="card product-card shadow-sm">
-    ${imageHtml}
-    <div class="card-body">
-      <h5 class="card-title">${item.item_name}</h5>
-      <p class="card-text">₱${parseFloat(item.sell_price).toFixed(2)}</p>
-      <p class="card-text">Stock: ${item.stock}</p>
-      <button class="btn btn-primary add-to-cart-btn"
-        data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
-        Add to Cart
-      </button>
-    </div>
-  </div>`;
-
+          <div class="card product-card shadow-sm">
+            ${imageHtml}
+            <div class="card-body">
+              <h5 class="card-title">${item.item_name}</h5>
+              <p class="card-text">₱${parseFloat(item.sell_price).toFixed(2)}</p>
+              <p class="card-text">Stock: ${item.stock}</p>
+              <button class="btn btn-primary add-to-cart-btn"
+                data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
+                Add to Cart
+              </button>
+              <button class="btn btn-outline-secondary mt-2 see-details-btn" data-id="${item.item_id}">
+                See Details
+              </button>
+            </div>
+          </div>`;
       });
 
       $('#productGrid').html(html);
     } else {
-      $('#productGrid').html('<p> Failed to load items.</p>');
+      $('#productGrid').html('<p>Failed to load items.</p>');
     }
   }).fail(() => {
-    $('#productGrid').html('<p> API error.</p>');
+    $('#productGrid').html('<p>API error.</p>');
   });
 }
 
 function loadCategories() {
   $.get('/api/category', function (res) {
-    if (res.success && Array.isArray(res.data)) {
+    if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
       const $filter = $('#categoryFilter');
       res.data.forEach(cat => {
         $filter.append(`<option value="${cat.category_id}">${cat.description}</option>`);
       });
     } else {
-      console.warn(' Failed to load categories.');
+      console.warn('Failed to load categories.');
     }
   }).fail(() => {
     console.error('Error fetching categories.');
@@ -216,17 +258,101 @@ $(document).ready(function () {
 
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
-    alert(' Item added to cart!');
+    alert('Item added to cart!');
 
     const stock = parseInt($(this).closest('.product-card').find('.card-text:contains("Stock")').text().replace('Stock:', '').trim());
-if (stock <= 0) {
-  alert('This item is out of stock.');
-  return;
-}
+    if (stock <= 0) {
+      alert('This item is out of stock.');
+      return;
+    }
+  });
 
+  $(document).on('click', '.see-details-btn', function () {
+    const itemId = $(this).data('id');
+
+    // Fetch product details
+    $.get('/api/item', function (res) {
+  if ((res.success || res.status === 'success') && res.data) {
+    const item = res.data.find(i => i.item_id == itemId); // Find the specific item
+
+    if (item) {
+      const images = item.images || [];
+
+      // Update modal content
+      $('#modalItemName').text(item.item_name || 'No name available');
+      $('#modalItemPrice').text(parseFloat(item.sell_price || 0).toFixed(2));
+      $('#modalItemStock').text(item.stock ?? 'N/A');
+
+      // Update images
+      let imgHtml = '';
+  if (images.length > 0) {
+    imgHtml = `<div class="row">` +
+      images.map(img =>
+        `<div class="col-md-6 mb-2">
+          <img src="/uploads/${img}" 
+              class="img-fluid rounded shadow-sm w-100"
+              style="object-fit: contain; max-height: 250px;"
+              onerror="this.style.display='none';">
+        </div>`
+      ).join('') +
+      `</div>`;
+  } else {
+    imgHtml = '<p>No images available</p>';
+  }
+  $('#modalImages').html(imgHtml);
+$('#modalDescription').text(item.description || 'No description available');
+    } else {
+      $('#modalItemName').text('Product not found');
+      $('#modalImages').html('<p>No product details available</p>');
+    }
+  } else {
+    $('#modalItemName').text('Product not found');
+    $('#modalImages').html('<p>No product details available</p>');
+  }
+}).fail(() => {
+  $('#modalItemName').text('Error loading product');
+  $('#modalImages').html('<p>Failed to load product details</p>');
+});
+
+
+    // Fetch reviews
+    $.get(`/api/reviews/item/${itemId}`, function (res) {
+      if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
+        if (res.data.length === 0) {
+          $('#modalReviews').html('<p>No reviews yet.</p>');
+          return;
+        }
+
+        const reviewHtml = res.data.map(r => {
+            const customerName = (r.fname && r.lname) ? `${r.fname} ${r.lname}` : 'Anonymous';
+
+            return `
+              <div class="border p-2 mb-2 rounded">
+                <strong>${customerName}</strong><br>
+                <span>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span><br>
+                <small>${new Date(r.created_at).toLocaleDateString()}</small><br>
+                <p>${r.review_text || 'No review text'}</p>
+              </div>
+            `;
+          }).join('');
+
+
+        $('#modalReviews').html(reviewHtml);
+      } else {
+        $('#modalReviews').html('<p>Failed to load reviews.</p>');
+      }
+    }).fail(() => {
+      $('#modalReviews').html('<p>Error loading reviews.</p>');
+    });
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+    modal.show();
   });
 });
 </script>
+
+<!-- Bootstrap JS Bundle with Popper -->
 
 </body>
 </html>
