@@ -5,11 +5,14 @@ const itemRoutes = require('./routes/item');
 const dashboardRoutes = require('./routes/dashboard');
 const categoryRoutes = require('./routes/category');
 const orderRoutes = require('./routes/order');  // 👈 Add this line
+const reviewRoutes = require('./routes/reviews');
 
 
 require('dotenv').config();
 
 const app = express();
+
+
 
 // Middleware
 app.use(cors());
@@ -26,6 +29,9 @@ app.use('/api/item', itemRoutes);
 app.use('/api/dashboard', dashboardRoutes); 
 app.use('/api/category', categoryRoutes);
 app.use('/api/orders', orderRoutes);  
+app.use('/api/reviews', reviewRoutes);
+
+
 
 
 // Export app

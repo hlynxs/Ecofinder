@@ -41,9 +41,17 @@
           window.location.href = 'profile.html';
         },
         error: function(err) {
-          $('#loginMsg').text('Login failed. Check your credentials.').css('color', 'red');
-          console.log(err);
-        }
+  let errorMsg = 'Login failed. Please try again.';
+
+  if (err.status === 403) {
+    errorMsg = 'Your account has been deactivated.';
+  } else if (err.status === 401) {
+    errorMsg = 'Invalid email or password.';
+  }
+
+  $('#loginMsg').text(errorMsg).css('color', 'red');
+  console.log(err);
+}
       });
     });
   </script>
