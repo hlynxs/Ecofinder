@@ -1,9 +1,30 @@
 $(document).ready(function () {
-    const url = 'http://localhost:3000/';
+   const url = 'http://localhost:3000/';
 
-    $('#header').load('/header_admin.html', function () {
-    
-      });
+  // Load header (assuming this file exists and is accessible)
+    $('#header').load('/header_admin.html');
+
+  $.ajax({
+  url: 'http://localhost:3000/api/auth/admin-check',
+  method: 'GET',
+  headers: {
+    Authorization: 'Bearer ' + (localStorage.getItem('token') || '')
+  },
+  success: function (res) {
+    console.log('✅ Admin verified:', res.user);
+
+    // Load header and render cart
+   
+  },
+  error: function (xhr) {
+    const defaultMsg = "Only admins can access this page.";
+    const message = xhr.responseJSON?.message || defaultMsg;
+
+    alert(message);
+    localStorage.removeItem('token');
+    window.location.href = '/login.html';
+  }
+});
 
     // ✅ Initialize Categories DataTable once
     const table = $('#ctable').DataTable({

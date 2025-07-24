@@ -11,17 +11,13 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <style>
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: start;
+    body {
+      text-align: center;
     }
 
     .product-card {
-      width: 18rem;
-      flex: 0 0 auto;
       margin-bottom: 20px;
+      width: 100%;
     }
 
     .carousel-item img,
@@ -35,6 +31,34 @@
       background-color: rgba(0, 0, 0, 0.5);
       border-radius: 50%;
     }
+
+    .category-btn.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .category-btn {
+      margin-right: 5px;
+    }
+
+    .filter-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      max-width: 300px;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -43,16 +67,30 @@
   <div id="header"></div>
 
   <!-- Page Content -->
-  <main class="container mt-5">
-    <h2>HOT WHEEL CARS</h2>
-    <div class="mb-3">
-      <label for="categoryFilter">Filter by Category:</label>
-      <select id="categoryFilter" class="form-select w-auto d-inline-block">
-        <option value="">All</option>
-      </select>
+  <main class="container-fluid px-0">
+    <!-- Banner -->
+    <div class="w-100 mb-4">
+      <img src="../images/newheader.png" alt="Hot Wheels Banner" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;">
     </div>
-   
-   
+
+    <h2 class="text-center mb-4">HOT WHEEL CARS</h2>
+
+    <!-- Filter & Search -->
+    <div class="filter-container">
+      <div id="categoryButtons" class="d-flex flex-wrap justify-content-center gap-2">
+        <button class="btn btn-outline-primary category-btn active" data-id="">All</button>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+        <button class="btn btn-outline-primary" id="searchBtn">Search</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="grid" id="productGrid"></div>
+    </div>
+  </main>
 
 <!-- Modal begins here -->
 <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailLabel" aria-hidden="true">
@@ -71,6 +109,7 @@
             <h4 id="modalItemName"></h4>
             <p><strong>Price:</strong> ₱<span id="modalItemPrice"></span></p>
             <p><strong>Stock:</strong> <span id="modalItemStock"></span></p>
+            <button class="btn btn-primary mt-3" id="modalAddToCart">Add to Cart</button>
           </div>
         </div>
         <hr>
@@ -80,10 +119,6 @@
     </div>
   </div>
 </div>
-
-
-    <div class="grid" id="productGrid"></div>
-  </main>
 
 <script>
 function parseImages(imageField) {
@@ -101,8 +136,10 @@ function parseImages(imageField) {
   }
 }
 
-function loadItems(categoryId = '') {
-  const url = categoryId ? `/api/item/category/${categoryId}` : `/api/item`;
+function loadItems(categoryId = '', keyword = '') {
+  let url = '/api/item';
+  if (categoryId) url = `/api/item/category/${categoryId}`;
+  if (keyword) url += `?search=${encodeURIComponent(keyword)}`;
 
   $.get(url, function (res) {
     if (res.status === 'success' || res.success) {
@@ -137,19 +174,21 @@ function loadItems(categoryId = '') {
         }
 
         html += `
-          <div class="card product-card shadow-sm">
-            ${imageHtml}
-            <div class="card-body">
-              <h5 class="card-title">${item.item_name}</h5>
-              <p class="card-text">₱${parseFloat(item.sell_price).toFixed(2)}</p>
-              <p class="card-text">Stock: ${item.stock}</p>
-              <button class="btn btn-primary add-to-cart-btn"
-                data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
-                Add to Cart
-              </button>
-              <button class="btn btn-outline-secondary mt-2 see-details-btn" data-id="${item.item_id}">
-                See Details
-              </button>
+          <div class="col-md-3">
+            <div class="card product-card shadow-sm">
+              ${imageHtml}
+              <div class="card-body">
+                <h5 class="card-title">${item.item_name}</h5>
+                <p class="card-text">₱${parseFloat(item.sell_price).toFixed(2)}</p>
+                <p class="card-text">Stock: ${item.stock}</p>
+                <button class="btn btn-primary add-to-cart-btn"
+                  data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
+                  Add to Cart
+                </button>
+                <button class="btn btn-outline-secondary mt-2 see-details-btn" data-id="${item.item_id}">
+                  See Details
+                </button>
+              </div>
             </div>
           </div>`;
       });
@@ -163,18 +202,22 @@ function loadItems(categoryId = '') {
   });
 }
 
-function loadCategories() {
+function loadCategories(selectedCategory = '') {
   $.get('/api/category', function (res) {
     if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
-      const $filter = $('#categoryFilter');
+      const $container = $('#categoryButtons');
+      $container.html(`
+        <button class="btn btn-outline-primary category-btn ${selectedCategory === '' ? 'active' : ''}" data-id="">All</button>
+      `);
       res.data.forEach(cat => {
-        $filter.append(`<option value="${cat.category_id}">${cat.description}</option>`);
+        const isActive = selectedCategory === cat.category_id ? 'active' : '';
+        $container.append(`
+          <button class="btn btn-outline-primary category-btn ${isActive}" data-id="${cat.category_id}">
+            ${cat.description}
+          </button>
+        `);
       });
-    } else {
-      console.warn('Failed to load categories.');
     }
-  }).fail(() => {
-    console.error('Error fetching categories.');
   });
 }
 
@@ -219,10 +262,20 @@ $(document).ready(function () {
   loadItems();
   loadCategories();
 
-  // Handle category filter
-  $('#categoryFilter').on('change', function () {
-    const selected = $(this).val();
-    loadItems(selected);
+  // Category button click handler
+  $(document).on('click', '.category-btn', function () {
+    $('.category-btn').removeClass('active');
+    $(this).addClass('active');
+    const categoryId = $(this).data('id');
+    const keyword = $('#searchInput').val().trim();
+    loadItems(categoryId, keyword);
+  });
+
+  // Search button click handler
+  $('#searchBtn').on('click', function () {
+    const keyword = $('#searchInput').val().trim();
+    const activeCategory = $('.category-btn.active').data('id') || '';
+    loadItems(activeCategory, keyword);
   });
 
   // Add to cart
@@ -248,7 +301,6 @@ $(document).ready(function () {
     };
 
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
       existingItem.quantity += 1;
@@ -259,95 +311,124 @@ $(document).ready(function () {
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
     alert('Item added to cart!');
-
-    const stock = parseInt($(this).closest('.product-card').find('.card-text:contains("Stock")').text().replace('Stock:', '').trim());
-    if (stock <= 0) {
-      alert('This item is out of stock.');
-      return;
-    }
   });
 
+  // Product details modal
+  let currentModalItem = null;
+  
   $(document).on('click', '.see-details-btn', function () {
     const itemId = $(this).data('id');
+    
+    // Store the current item for the modal Add to Cart button
+    const card = $(this).closest('.product-card');
+    currentModalItem = {
+        id: itemId,
+        name: card.find('.card-title').text(),
+        price: parseFloat(card.find('.card-text').first().text().replace('₱', '')),
+        image_path: card.find('img').first().attr('src')?.replace('/uploads/', '') || 'default.jpg'
+    };
 
-    // Fetch product details
-    $.get('/api/item', function (res) {
-  if ((res.success || res.status === 'success') && res.data) {
-    const item = res.data.find(i => i.item_id == itemId); // Find the specific item
+    // Fetch product details using your backend endpoint
+    $.get(`/api/item/${itemId}`, function (res) {
+        if (res.success && res.result && res.result.length > 0) {
+            const item = res.result[0];
+            
+            // Update modal content
+            $('#modalItemName').text(item.item_name || 'No name available');
+            $('#modalItemPrice').text(parseFloat(item.sell_price || 0).toFixed(2));
+            $('#modalItemStock').text(item.quantity ?? 'N/A');
 
-    if (item) {
-      const images = item.images || [];
-
-      // Update modal content
-      $('#modalItemName').text(item.item_name || 'No name available');
-      $('#modalItemPrice').text(parseFloat(item.sell_price || 0).toFixed(2));
-      $('#modalItemStock').text(item.stock ?? 'N/A');
-
-      // Update images
-      let imgHtml = '';
-  if (images.length > 0) {
-    imgHtml = `<div class="row">` +
-      images.map(img =>
-        `<div class="col-md-6 mb-2">
-          <img src="/uploads/${img}" 
-              class="img-fluid rounded shadow-sm w-100"
-              style="object-fit: contain; max-height: 250px;"
-              onerror="this.style.display='none';">
-        </div>`
-      ).join('') +
-      `</div>`;
-  } else {
-    imgHtml = '<p>No images available</p>';
-  }
-  $('#modalImages').html(imgHtml);
-$('#modalDescription').text(item.description || 'No description available');
-    } else {
-      $('#modalItemName').text('Product not found');
-      $('#modalImages').html('<p>No product details available</p>');
-    }
-  } else {
-    $('#modalItemName').text('Product not found');
-    $('#modalImages').html('<p>No product details available</p>');
-  }
-}).fail(() => {
-  $('#modalItemName').text('Error loading product');
-  $('#modalImages').html('<p>Failed to load product details</p>');
-});
-
+            // Process images from your backend response
+            const allImages = item.all_images || [];
+            
+            // Update images display
+            let imgHtml = '';
+            if (allImages.length > 0) {
+                imgHtml = `
+                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        ${allImages.map((img, index) => `
+                            <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                                <img src="/uploads/${img}" 
+                                    class="d-block w-100"
+                                    style="height: 300px; object-fit: contain;"
+                                    onerror="this.style.display='none';">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    </button>
+                </div>`;
+            } else {
+                imgHtml = '<p>No images available</p>';
+            }
+            $('#modalImages').html(imgHtml);
+        } else {
+            $('#modalImages').html('<p>Failed to load product details</p>');
+        }
+    }).fail(function() {
+        $('#modalImages').html('<p>Error loading product details</p>');
+    });
 
     // Fetch reviews
     $.get(`/api/reviews/item/${itemId}`, function (res) {
-      if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
-        if (res.data.length === 0) {
-          $('#modalReviews').html('<p>No reviews yet.</p>');
-          return;
+        if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
+            if (res.data.length === 0) {
+                $('#modalReviews').html('<p>No reviews yet.</p>');
+                return;
+            }
+
+            const reviewHtml = res.data.map(r => {
+                const customerName = (r.fname && r.lname) ? `${r.fname} ${r.lname}` : 'Anonymous';
+                return `
+                    <div class="border p-2 mb-2 rounded">
+                        <strong>${customerName}</strong><br>
+                        <span>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span><br>
+                        <small>${new Date(r.created_at).toLocaleDateString()}</small><br>
+                        <p>${r.review_text || 'No review text'}</p>
+                    </div>
+                `;
+            }).join('');
+
+            $('#modalReviews').html(reviewHtml);
         }
-
-        const reviewHtml = res.data.map(r => {
-            const customerName = (r.fname && r.lname) ? `${r.fname} ${r.lname}` : 'Anonymous';
-
-            return `
-              <div class="border p-2 mb-2 rounded">
-                <strong>${customerName}</strong><br>
-                <span>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span><br>
-                <small>${new Date(r.created_at).toLocaleDateString()}</small><br>
-                <p>${r.review_text || 'No review text'}</p>
-              </div>
-            `;
-          }).join('');
-
-
-        $('#modalReviews').html(reviewHtml);
-      } else {
-        $('#modalReviews').html('<p>Failed to load reviews.</p>');
-      }
-    }).fail(() => {
-      $('#modalReviews').html('<p>Error loading reviews.</p>');
     });
 
     // Show modal
     const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
     modal.show();
+});
+
+  // Modal Add to Cart button
+  $('#modalAddToCart').on('click', function() {
+    if (!currentModalItem) return;
+    
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+
+    if (!token || !userId) {
+      alert('You must be logged in first!');
+      window.location.href = '/login.html';
+      return;
+    }
+
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existingItem = cart.find(item => item.id === currentModalItem.id);
+    
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      currentModalItem.quantity = 1;
+      cart.push(currentModalItem);
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    alert('Item added to cart!');
   });
 });
 </script>

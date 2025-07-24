@@ -8,18 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
 
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.bootstrap4.min.css"
-    integrity="sha512-PT0RvABaDhDQugEbpNMwgYBCnGCiTZMh9yOzUsJHDgl/dMhD9yjHAwoumnUk3JydV3QTcIkNDuN40CJxik5+WQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet" />
-  <link href="https://cdn.datatables.net/buttons/2.3.5/css/buttons.dataTables.min.css" rel="stylesheet" />
-
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons-bs5/2.3.6/buttons.bootstrap5.min.css"
-    integrity="sha512-vWTrt2A9iAn2pK8hNZS26YZRDDUvLiOfyL+MmBEXJizrigtxnpLuLrLOOMm+pcrUJFzGssUwoS6Gofp+TT2deQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.css"
     integrity="sha512-fjO3Vy3QodX9c6G9AUmr6WuIaEPdGRxBjD7gjatG5gGylzYyrEq3U0q+smkG6CwIY0L8XALRFHh4KPHig0Q1ug=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -32,26 +22,73 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
     integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
     crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"
-    integrity="sha512-BkpSL20WETFylMrcirBahHfSnY++H2O1W+UnEEO4yNIl+jI2+zowyoGJpbtk6bx97fBXf++WJHSSK2MV4ghPcg=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
-  <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
-  <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.bootstrap4.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.5/js/buttons.html5.min.js"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"
     integrity="sha512-RdSPYh1WA6BF0RhpisYJVYkOyTzK4HwofJ3Q7ivt/jkpW6Vc8AurL1R+4AUcvn9IwEKAPm/fk7qFZW3OuiUDeg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.js"
     integrity="sha512-LGHBR+kJ5jZSIzhhdfytPoEHzgaYuTRifq9g5l6ja6/k9NAOsAi5dQh4zQF6JIRB8cAYxTRedERUF+97/KuivQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        .role-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .role-admin {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .role-user {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-active {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-deactivated {
+            background-color: #dc3545;
+            color: white;
+        }
+        .action-buttons .btn {
+            margin: 0 2px;
+            padding: 0.25rem 0.5rem;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #viewTypeSelector {
+            margin-bottom: 20px;
+        }
+        .scroll-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-
   <div id="header"></div>
 
 
@@ -63,8 +100,7 @@
       <div class="card-body">
         <div class="d-flex justify-content-between mb-4">
           <button type="button" class="btn btn-success" data-toggle="modal" data-target="#userModal">
-            <i class="fas fa-plus"></i> Add New User
-          </button>
+            <i class="fas fa-plus"></i> Add Admin </button>
 
           <div class="search-container">
             <div class="input-group">
@@ -76,6 +112,15 @@
               </div>
             </div>
           </div>
+        </div>
+  
+        <!-- View Type Selector -->
+        <div class="form-group" id="viewTypeSelector">
+          <label for="viewType">View Type:</label>
+          <select class="form-control" id="viewType">
+            <option value="pagination">Pagination</option>
+            <option value="infinite">Infinite Scroll</option>
+          </select>
         </div>
 
         <div class="table-responsive">
@@ -94,56 +139,68 @@
               </tr>
             </thead>
             <tbody id="ubody">
-
+              <!-- Users will be loaded here -->
             </tbody>
           </table>
+        </div>
+
+        <!-- Pagination Container -->
+        <div id="paginationContainer" class="pagination-container">
+          <nav aria-label="Page navigation">
+            <ul class="pagination" id="pagination">
+              <!-- Pagination will be generated here -->
+            </ul>
+          </nav>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <span>Loading more users...</span>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Scroll Info -->
+  <div id="scrollInfo" class="scroll-info">
+    Scroll to load more users
+  </div>
+
+ <!-- Add User Modal -->
+<!-- Add Admin Modal -->
 <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <form id="addUserForm">
-        <div class="modal-header">
-          <h5 class="modal-title" id="userModalLabel">Add New User</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          Add your input fields here
+      <div class="modal-header">
+        <h5 class="modal-title" id="userModalLabel">Add New Admin</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="addUserForm">
           <div class="form-group">
-            <label for="add_name">Name</label>
-            <input type="text" class="form-control" id="add_name" name="name" required>
+            <label for="add_name">Full Name</label>
+            <input type="text" class="form-control" id="add_name" placeholder="Enter full name" required>
           </div>
           <div class="form-group">
-            <label for="add_email">Email</label>
-            <input type="email" class="form-control" id="add_email" name="email" required>
+            <label for="add_email">Email Address</label>
+            <input type="email" class="form-control" id="add_email" placeholder="Enter email" required>
           </div>
           <div class="form-group">
             <label for="add_password">Password</label>
-            <input type="password" class="form-control" id="add_password" name="password" required>
+            <input type="password" class="form-control" id="add_password" placeholder="Enter password" required>
+            <small class="form-text text-muted">Minimum 8 characters</small>
           </div>
-          <div class="form-group">
-            <label for="add_addressline">Address</label>
-            <input type="text" class="form-control" id="add_addressline" name="addressline">
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create Admin</button>
           </div>
-          <div class="form-group">
-            <label for="add_town">Town</label>
-            <input type="text" class="form-control" id="add_town" name="town">
-          </div>
-          <div class="form-group">
-            <label for="add_phone">Phone</label>
-            <input type="text" class="form-control" id="add_phone" name="phone">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success">Add User</button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 </div>
@@ -210,479 +267,29 @@
         </div>
       </div>
     </div>
+    
   </div>
+
+  
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.js"
+    integrity="sha512-LGHBR+kJ5jZSIzhhdfytPoEHzgaYuTRifq9g5l6ja6/k9NAOsAi5dQh4zQF6JIRB8cAYxTRedERUF+97/KuivQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"
+    integrity="sha512-RdSPYh1WA6BF0RhpisYJVYkOyTzK4HwofJ3Q7ivt/jkpW6Vc8AurL1R+4AUcvn9IwEKAPm/fk7qFZW3OuiUDeg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="js/user.js"></script>
 </body>
 </html>
-
-<script>
-    $(document).ready(function () {
-
-      $('#header').load('/header_admin.html', function () {
-          renderCart();
-        });
-
-    const url = 'http://localhost:3000/';
-  $('#utable').DataTable({
-        ajax: {
-            url: `${url}api/users/users`,
-            dataSrc: "rows",
-            error: function (xhr, error, thrown) {
-                console.error('DataTable loading error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Failed to load user data.',
-                });
-            }
-        },
-        dom: 'Bfrtip',
-        buttons: [
-            'pdf',
-            'excel',
-            {
-                text: 'Add User',
-                className: 'btn btn-primary',
-                action: function (e, dt, node, config) {
-                    $("#uform").trigger("reset");
-                    $('#userModal').modal('show');
-                    $('#userUpdate').hide();
-                    $('#userSubmit').show();
-                    $('#userId').remove();
-                    $('#role-description').text('');
-                    $('#userModalLabel').text('Add New User');
-                }
-            }
-        ],
-        columns: [
-            { data: 'id' },
-            { data: 'name' },
-            { data: 'email' },
-            { data: 'addressline' },
-            { data: 'town' },
-            { data: 'phone' },
-            {
-                data: 'role',
-                render: function (data, type, row) {
-                    const roleClass = `role-${data.toLowerCase()}`;
-                    return `<span class="role-badge ${roleClass}">${data.charAt(0).toUpperCase() + data.slice(1)}</span>`;
-                }
-            },
-            {
-                data: 'status',
-                render: function (data, type, row) {
-                    const statusClass = `status-${data.toLowerCase()}`;
-                    return `<span class="status-badge ${statusClass}">${data.charAt(0).toUpperCase() + data.slice(1)}</span>`;
-                }
-            },
-            {
-                data: null,
-                render: function (data, type, row) {
-                    return `
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-warning roleBtn" data-id="${data.id}" title="Change Role">
-                                <i class="fas fa-user-tag"></i>
-                            </button>
-                            <button class="btn btn-sm btn-secondary statusBtn" data-id="${data.id}" title="Change Status">
-                                <i class="fas fa-toggle-on"></i>
-                            </button>
-                         
-                        </div>
-                    `;
-                }
-                //    <button class="btn btn-sm btn-danger deleteBtn" data-id="${data.id}" title="Delete User">
-                //                 <i class="fas fa-trash"></i>
-                //             </button>
-            }
-        ],
-        responsive: true,
-        processing: true,
-        language: {
-            processing: "Loading users..."
-        }
-    });
-
-    // Show role description when role is selected
-    $('#user_role').on('change', function () {
-        const selectedOption = $(this).find('option:selected');
-        const description = selectedOption.data('description');
-
-        if (description) {
-            $('#role-description').text(`Role: ${description}`);
-        } else {
-            $('#role-description').text('');
-        }
-    });
-
-    // Submit new user
-    $("#userSubmit").on('click', function (e) {
-        e.preventDefault();
-
-        if (!$('#uform')[0].checkValidity()) {
-            $('#uform')[0].reportValidity();
-            return;
-        }
-
-        var data = $('#uform')[0];
-        let formData = new FormData(data);
-
-        // Convert FormData to regular object for JSON
-        let userData = {};
-        for (var pair of formData.entries()) {
-            userData[pair[0]] = pair[1];
-        }
-
-        // Show loading
-        Swal.fire({
-            title: 'Creating User...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        $.ajax({
-            method: "POST",
-            url: `${url}api/users/users`,
-            data: JSON.stringify(userData),
-            contentType: 'application/json',
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                $("#userModal").modal("hide");
-                var $utable = $('#utable').DataTable();
-                $utable.ajax.reload();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'User Added!',
-                    text: 'New user has been added successfully.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            },
-            error: function (xhr, status, error) {
-                console.log(xhr.responseJSON);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: xhr.responseJSON?.error || 'Failed to add user. Please try again.',
-                });
-            }
-        });
-    });
-
-    // Edit user button click handler
-    $('#utable tbody').on('click', 'button.editBtn', function (e) {
-        e.preventDefault();
-        $('#userId').remove();
-        $("#uform").trigger("reset");
-
-        var id = $(this).data('id');
-        console.log(id);
-        $('#userModal').modal('show');
-        $('<input>').attr({ type: 'hidden', id: 'userId', name: 'user_id', value: id }).appendTo('#uform');
-
-        $('#userSubmit').hide();
-        $('#userUpdate').show();
-        $('#userModalLabel').text('Edit User');
-
-        // Show loading
-        Swal.fire({
-            title: 'Loading User Data...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        $.ajax({
-            method: "GET",
-            url: `${url}api/users/users/${id}`,
-            dataType: "json",
-            success: function (data) {
-                const { result } = data;
-                console.log(result);
-
-                Swal.close();
-
-
-                const user = result[0] || result;
-                $('#user_name').val(user.name);
-                $('#user_email').val(user.email);
-                $('#user_phone').val(user.phone);
-                $('#user_town').val(user.town);
-                $('#user_address').val(user.addressline);
-            },
-            error: function (xhr, status, error) {
-                console.log(xhr.responseJSON);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: xhr.responseJSON?.error || 'Failed to load user data.',
-                });
-            }
-        });
-    });
-
-    // Update user
-    $("#userUpdate").on('click', function (e) {
-        e.preventDefault();
-
-        if (!$('#uform')[0].checkValidity()) {
-            $('#uform')[0].reportValidity();
-            return;
-        }
-
-        var id = $('#userId').val();
-        console.log(id);
-        var table = $('#utable').DataTable();
-
-        var data = $('#uform')[0];
-        let formData = new FormData(data);
-
-        // Convert FormData to regular object for JSON
-        let userData = {};
-        for (var pair of formData.entries()) {
-            userData[pair[0]] = pair[1];
-        }
-
-        // Show loading
-        Swal.fire({
-            title: 'Updating User...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        $.ajax({
-            method: "PUT",
-            url: `${url}api/users/users/${id}`,
-            data: JSON.stringify(userData),
-            contentType: 'application/json',
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                $('#userModal').modal("hide");
-                table.ajax.reload();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'User Updated!',
-                    text: 'User information has been updated successfully.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            },
-            error: function (xhr, status, error) {
-                console.log(xhr.responseJSON);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: xhr.responseJSON?.error || 'Failed to update user. Please try again.',
-                });
-            }
-        });
-    });
-
-    // Change role button click handler
-    $('#utable tbody').on('click', 'button.roleBtn', function (e) {
-        e.preventDefault();
-        var id = $(this).data('id');
-        $('#role_user_id').val(id);
-        $('#roleModal').modal('show');
-    });
-
-    // Submit role change
-    $("#roleSubmit").on('click', function (e) {
-        e.preventDefault();
-
-        if (!$('#roleForm')[0].checkValidity()) {
-            $('#roleForm')[0].reportValidity();
-            return;
-        }
-
-        var userId = $('#role_user_id').val();
-        var newRole = $('#new_role').val();
-        var table = $('#utable').DataTable();
-
-        // Show loading
-        Swal.fire({
-            title: 'Updating Role...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        $.ajax({
-            method: "PUT",
-            url: `${url}api/users/users/${userId}/role`,
-            data: JSON.stringify({ role: newRole }),
-            contentType: 'application/json',
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                $('#roleModal').modal("hide");
-                table.ajax.reload();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Role Updated!',
-                    text: 'User role has been updated successfully.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            },
-            error: function (xhr, status, error) {
-                console.log(xhr.responseJSON);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: xhr.responseJSON?.error || 'Failed to update role. Please try again.',
-                });
-            }
-        });
-    });
-
-    // Change status button click handler
-    $('#utable tbody').on('click', 'button.statusBtn', function (e) {
-        e.preventDefault();
-        var id = $(this).data('id');
-        $('#status_user_id').val(id);
-        $('#statusModal').modal('show');
-    });
-
-    // Submit status change
-    $("#statusSubmit").on('click', function (e) {
-        e.preventDefault();
-
-        if (!$('#statusForm')[0].checkValidity()) {
-            $('#statusForm')[0].reportValidity();
-            return;
-        }
-
-        var userId = $('#status_user_id').val();
-        var newStatus = $('#new_status').val();
-        var table = $('#utable').DataTable();
-
-        // Show loading
-        Swal.fire({
-            title: 'Updating Status...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        $.ajax({
-            method: "PUT",
-            url: `${url}api/users/users/${userId}/status`,
-            data: JSON.stringify({ status: newStatus }),
-            contentType: 'application/json',
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                $('#statusModal').modal("hide");
-                table.ajax.reload();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Status Updated!',
-                    text: 'User status has been updated successfully.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            },
-            error: function (xhr, status, error) {
-                console.log(xhr.responseJSON);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: xhr.responseJSON?.error || 'Failed to update status. Please try again.',
-                });
-            }
-        });
-    });
-
-    // // Delete user button click handler
-    // $('#utable tbody').on('click', 'button.deleteBtn', function (e) {
-    //     e.preventDefault();
-    //     var table = $('#utable').DataTable();
-    //     var id = $(this).data('id');
-    //     var $row = $(this).closest('tr');
-    //     console.log(id);
-
-    //     Swal.fire({
-    //         title: 'Are you sure?',
-    //         text: 'You won\'t be able to revert this!',
-    //         icon: 'warning',
-    //         showCancelButton: true,
-    //         confirmButtonColor: '#d33',
-    //         cancelButtonColor: '#3085d6',
-    //         confirmButtonText: 'Yes, delete it!'
-    //     }).then((result) => {
-    //         if (result.isConfirmed) {
-    //             // Show loading
-    //             Swal.fire({
-    //                 title: 'Deleting User...',
-    //                 allowOutsideClick: false,
-    //                 didOpen: () => {
-    //                     Swal.showLoading();
-    //                 }
-    //             });
-
-    //             $.ajax({
-    //                 method: "DELETE",
-    //                 : `${url}api/users/users/${id}`,
-    //                 dataType: "json",
-    //                 success: function (data) {
-    //                     console.log(data);
-    //                     table.ajax.reload();
-
-    //                     Swal.fire({
-    //                         icon: 'success',
-    //                         title: 'Deleted!',
-    //                         text: 'User has been deleted successfully.',
-    //                         timer: 2000,
-    //                         showConfirmButton: false
-    //                     });
-    //                 },
-    //                 error: function (xhr, status, error) {
-    //                     console.log(xhr.responseJSON);
-    //                     Swal.fire({
-    //                         icon: 'error',
-    //                         title: 'Error!',
-    //                         text: xhr.responseJSON?.error || 'Failed to delete user. Please try again.',
-    //                     });
-    //                 }
-    //             });
-    //         }
-    //     });
-    // });
-
-    // Search functionality
-    $('#userSearch').on('keyup', function () {
-        var table = $('#utable').DataTable();
-        table.search(this.value).draw();
-    });
-
-    // Reset forms when modals are hidden
-    $('#userModal').on('hidden.bs.modal', function () {
-        $('#uform')[0].reset();
-        $('#userSubmit').show();
-        $('#userUpdate').hide();
-        $('#userModalLabel').text('User Management');
-        $('#userId').remove();
-        $('#role-description').text('');
-    });
-
-    $('#roleModal').on('hidden.bs.modal', function () {
-        $('#roleForm')[0].reset();
-    });
-
-    $('#statusModal').on('hidden.bs.modal', function () {
-        $('#statusForm')[0].reset();
-    });
-});
-</script>

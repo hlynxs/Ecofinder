@@ -21,8 +21,80 @@ const registerUser = async (req, res) => {
     console.log(error);
   }
 };
+//create admin
+ const createAdmin = async (req, res) => {
+  const { name, email, password } = req.body;
 
-// ----------------- Login -----------------
+  // Validate input
+  if (!name || !email || !password) {
+    return res.status(400).json({
+      success: false,
+      error: 'Name, email and password are required',
+      code: 'MISSING_FIELDS'
+    });
+  }
+
+  // Validate email format
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid email format',
+      code: 'INVALID_EMAIL'
+    });
+  }
+
+  // Validate password strength
+  if (password.length < 8) {
+    return res.status(400).json({
+      success: false,
+      error: 'Password must be at least 8 characters',
+      code: 'WEAK_PASSWORD'
+    });
+  }
+
+  try {
+    // Use promise-based queries for better error handling
+    const [checkResults] = await connection.promise().execute(
+      'SELECT id FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (checkResults.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: 'Email already exists',
+        code: 'EMAIL_EXISTS'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const [result] = await connection.promise().execute(
+      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+      [name, email, hashedPassword, 'admin'] // Using lowercase 'admin' for consistency
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Admin created successfully',
+      data: {
+        userId: result.insertId,
+        email,
+        role: 'admin'
+      }
+    });
+
+  } catch (error) {
+    console.error('Admin creation error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      code: 'SERVER_ERROR',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+  // ----------------- Login -----------------
 const loginUser = (req, res) => {
   const { email, password } = req.body;
 
@@ -438,6 +510,7 @@ const getSingleUser = (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  createAdmin,
   updateUser,
   deactivateUser,
   updateUserRole,

@@ -294,3 +294,60 @@ exports.restoreCategory = (req, res) => {
       });
   }
 };
+
+// GET /api/categories/paginated?limit=10&offset=0&showDeleted=true
+exports.getCategoriesPaginated = (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = parseInt(req.query.offset) || 0;
+  const sortParam = req.query.sort;
+  // Default to descending by category_id if no valid sort param provided
+  const sort = sortParam === 'asc' ? 'ASC' : 'DESC';
+
+  const dataSql = `
+    SELECT category_id, description, deleted_at 
+    FROM category 
+    ORDER BY category_id ${sort}
+    LIMIT ? OFFSET ?
+  `;
+
+  const countSql = `SELECT COUNT(*) AS total FROM category`;
+
+  try {
+    connection.query(dataSql, [limit, offset], (err, results) => {
+      if (err) {
+        console.error('Error fetching paginated categories:', err);
+        return res.status(500).json({
+          success: false,
+          error: 'Database error',
+          details: err,
+        });
+      }
+
+      connection.query(countSql, (countErr, countResult) => {
+        if (countErr) {
+          console.error('Error counting categories:', countErr);
+          return res.status(500).json({
+            success: false,
+            error: 'Database count error',
+            details: countErr,
+          });
+        }
+
+        const total = countResult[0]?.total || 0;
+
+        return res.status(200).json({
+          success: true,
+          data: results || [],
+          total,
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Server error in getCategoriesPaginated:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Server error',
+      details: error,
+    });
+  }
+};

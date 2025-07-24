@@ -1,30 +1,74 @@
 const connection = require('../config/database');
 
-exports.createReview = (req, res) => {
+exports.createReview = async (req, res) => {
   const { orderinfo_id, customer_id, item_id, rating, review_text } = req.body;
 
+  // Validate required fields
   if (!orderinfo_id || !customer_id || !item_id || !rating) {
     return res.status(400).json({
       success: false,
-      message: "Missing required fields.",
+      message: "Missing required fields (orderinfo_id, customer_id, item_id, or rating).",
     });
   }
 
-  const sql = `
-    INSERT INTO reviews (orderinfo_id, customer_id, item_id, rating, review_text, created_at)
-    VALUES (?, ?, ?, ?, ?, NOW())
-  `;
+  try {
+    // First check if this specific order+item+customer already has a review
+    const [existing] = await connection.promise().query(
+      `SELECT review_id FROM reviews 
+       WHERE orderinfo_id = ? AND customer_id = ? AND item_id = ? 
+       LIMIT 1`,
+      [orderinfo_id, customer_id, item_id]
+    );
 
-  connection.query(sql, [orderinfo_id, customer_id, item_id, rating, review_text], (err, result) => {
-    if (err) {
-      console.error("Failed to insert review:", err);
-      return res.status(500).json({ success: false, message: "Failed to submit review." });
+    if (existing.length > 0) {
+      // Update existing review for this specific order
+      await connection.promise().query(
+        `UPDATE reviews SET 
+         rating = ?, 
+         review_text = ?, 
+         updated_at = NOW() 
+         WHERE review_id = ?`,
+        [rating, review_text, existing[0].review_id]
+      );
+      
+      return res.json({ 
+        success: true, 
+        message: "Review updated successfully for this order.",
+        action: "updated"
+      });
+    } else {
+      // Create new review for this order
+      await connection.promise().query(
+        `INSERT INTO reviews 
+         (orderinfo_id, customer_id, item_id, rating, review_text, created_at)
+         VALUES (?, ?, ?, ?, ?, NOW())`,
+        [orderinfo_id, customer_id, item_id, rating, review_text]
+      );
+      
+      return res.json({ 
+        success: true, 
+        message: "New review submitted successfully for this order.",
+        action: "created"
+      });
     }
-
-    res.json({ success: true, message: "Review submitted successfully!" });
-  });
+  } catch (err) {
+    console.error("Review operation failed:", err);
+    
+    // Handle specific error cases
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({
+        success: false,
+        message: "You've already submitted a review for this specific order item.",
+      });
+    }
+    
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to process review",
+      error: err.message
+    });
+  }
 };
-
 
   exports.getReviewsByCustomer = (req, res) => {
     const customerId = req.params.id;

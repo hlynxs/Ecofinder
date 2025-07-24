@@ -3,6 +3,8 @@ const router = express.Router();
 const itemController = require('../controllers/item');
 const upload = require('../middlewares/upload');
 
+
+
 // PUBLIC ROUTES
 router.get('/', itemController.getAllItems);
 router.get('/category/:categoryId', itemController.getItemsByCategory);
@@ -11,7 +13,13 @@ router.get('/search/:term', itemController.searchItems);
 
 // ADMIN ROUTES
 router.get('/admin', itemController.getAllItemsIncludingDeleted);
+
+// Specific routes FIRST
+router.get('/admin/infinite', itemController.getItemsPaginated);
+
+// General route LAST
 router.get('/admin/:id', itemController.getSingleItem);
+
 
 // CREATE (single image)
 // item.js (routes)

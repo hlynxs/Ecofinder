@@ -118,20 +118,14 @@
         <!-- Left Nav -->
         <ul class="navbar-nav me-auto">
           <li class="nav-item"><a class="nav-link" href="/home_admin.html">HOME</a></li>
-         
           <li class="nav-item"><a class="nav-link" href="/user_orders.html"> USER ORDERS</a></li>
           <li class="nav-item"><a class="nav-link" href="/item.html">ITEM </a></li>
           <li class="nav-item"><a class="nav-link" href="/category.html">CATEGORY </a></li>
           <li class="nav-item"><a class="nav-link" href="/user.html">USERS </a></li>
-
-
         </ul>
 
         <!-- Right Nav -->
         <ul class="navbar-nav ms-auto align-items-center">
-          <!-- Fixed Search -->
-        
-
           <!-- Guest Links -->
           <li class="nav-item" id="login-link">
             <a class="nav-link btn btn-hw-outline mx-1" href="/login.html">LOGIN</a>
@@ -140,14 +134,13 @@
             <a class="nav-link btn btn-hw mx-1" href="/register.html">REGISTER</a>
           </li>
 
-          <!-- Authenticated User Dropdown -->
+          <!-- Authenticated User Dropdown (NO IMAGE) -->
           <li class="nav-item dropdown d-none" id="user-dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="/uploads/default.jpg" alt="Profile Image" class="rounded-circle profile-img" width="40" height="40" />
-              <span class="ms-2 text-uppercase" id="username">USER</span>
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="text-uppercase" id="username">USER</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href="/profile.html"><i class="bi bi-person-circle me-2"></i>PROFILE</a></li>
+              <li><a class="dropdown-item" href="/profile_admin.html"><i class="bi bi-person-circle me-2"></i>PROFILE</a></li>
               <li><a class="dropdown-item" href="#" onclick="logoutUser()"><i class="bi bi-box-arrow-right me-2"></i>LOGOUT</a></li>
             </ul>
           </li>
@@ -157,46 +150,53 @@
   </nav>
 </div>
 
-<!-- jQuery and Bootstrap Bundle (with Popper) -->
+<!-- jQuery and Bootstrap Bundle -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  function logoutUser() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    window.location.href = '/login.html';
-  }
-
-  function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    $('#cart-count').text(cart.length);
-  }
-
   $(document).ready(function () {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
 
-    if (token && userId) {
-      $('#login-link, #register-link').addClass('d-none');
-      $('#user-dropdown').removeClass('d-none');
-
-      $.get(`/api/users/customers/${userId}`, function (res) {
-        if (res.success && res.data) {
-          const data = res.data;
-          const fullName = `${data.fname || ''} ${data.lname || ''}`.trim();
-          $('#username').text(fullName || 'USER');
-          if (data.image_path) {
-            $('.profile-img').attr('src', `/${data.image_path}`);
-          }
-        }
-      });
-    } else {
+    if (!token || !userId) {
       $('#login-link, #register-link').removeClass('d-none');
       $('#user-dropdown').addClass('d-none');
+      return;
     }
 
-    //  Update cart count on every page load
-    updateCartCount();
+    fetch(`/api/users/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      const user = data.result;
+      if (!user) return;
+
+      $('#username').text((user.name || 'ADMIN').toUpperCase());
+      $('#login-link, #register-link').addClass('d-none');
+      $('#user-dropdown').removeClass('d-none');
+    })
+    .catch(err => {
+      console.error('Fetch failed:', err);
+      $('#login-link, #register-link').removeClass('d-none');
+      $('#user-dropdown').addClass('d-none');
+    });
   });
+
+  function logoutUser() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('role');
+    window.location.href = '/login.html';
+  }
 </script>
+
+
+
+

@@ -6,6 +6,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const categoryRoutes = require('./routes/category');
 const orderRoutes = require('./routes/order');  // 👈 Add this line
 const reviewRoutes = require('./routes/reviews');
+const authRoutes = require('./routes/auth'); // adjust path if needed
 
 
 require('dotenv').config();
@@ -18,6 +19,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/auth', authRoutes);
+
 
 // ✅ Serve static folders
 app.use(express.static('public'));       

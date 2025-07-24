@@ -22,38 +22,44 @@
 
 
   <script>
-    $('#loginForm').on('submit', function(e) {
-      e.preventDefault();
-      const formData = {
-        email: $('input[name="email"]').val(),
-        password: $('input[name="password"]').val()
-      };
+  $(document).ready(function () {
+  $('#loginForm').submit(function (e) {
+    e.preventDefault();
 
-      $.ajax({
-        url: '/api/users/login',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
-        success: function(res) {
-          $('#loginMsg').text('Login successful!').css('color', 'green');
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('userId', res.user.id);
-          window.location.href = 'profile.html';
-        },
-        error: function(err) {
-  let errorMsg = 'Login failed. Please try again.';
+    const email = $('input[name="email"]').val().trim();
+const password = $('input[name="password"]').val().trim();
 
-  if (err.status === 403) {
-    errorMsg = 'Your account has been deactivated.';
-  } else if (err.status === 401) {
-    errorMsg = 'Invalid email or password.';
-  }
 
-  $('#loginMsg').text(errorMsg).css('color', 'red');
-  console.log(err);
-}
-      });
+    $.ajax({
+      type: 'POST',
+      url: 'http://localhost:3000/api/users/login',
+      contentType: 'application/json',
+      data: JSON.stringify({ email, password }),
+      success: function (response) {
+        const user = response.user;
+        const token = response.token;
+
+        // Save to localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('userId', user.id || user.user_id);
+        localStorage.setItem('role', user.role.toLowerCase());
+
+
+        
+        // Redirect
+        if (user.role === 'Admin') {
+          window.location.href = '/home_admin.html';
+        } else {
+          window.location.href = '/profile.html';
+        }
+      },
+      error: function (xhr) {
+        alert(xhr.responseJSON?.message || 'Login failed.');
+      }
     });
-  </script>
+  });
+});
+</script>
+
 </body>
 </html>

@@ -107,9 +107,72 @@
 
   <script>
     $(document).ready(function () {
-      $('#header').load('/header_admin.html', function () {
-          renderCart();
-        });
+      sessionStorage.setItem('tabRole', 'admin'); // Mark this as admin tab
+      
+    $('#header').load('/header_admin.html', function () {
+      
+    });
+  $.ajax({
+  url: 'http://localhost:3000/api/auth/admin-check',
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer ' + (localStorage.getItem('token') || ''),
+    'X-Tab-Context': 'admin' // MUST ADD THIS NEW HEADER
+  },
+  success: function(res) {
+    console.log('✅ Admin verified:', res.user);
+    if (sessionStorage.getItem('tabRole') !== 'admin') {
+      alert('Security Alert: Please use admin interface for admin accounts');
+      logoutAdmin();
+      return;
+    }
+    // Load header and render cart
+   
+  },
+  error: function(xhr) {
+    // 4. ENHANCED ERROR HANDLING
+    const defaultMsg = "Only admins can access this page.";
+    const message = xhr.responseJSON?.message || defaultMsg;
+    
+    if (xhr.status === 403 && xhr.responseJSON?.message?.includes('interface')) {
+      // Special handling for wrong interface access
+      alert('Admin account detected - redirecting to admin interface');
+      window.location.href = '/home_admin.html';
+    } else {
+      alert(message);
+      logoutAdmin();
+    }
+  }
+});
+
+function logoutAdmin() {
+  // Clear all authentication data
+  localStorage.removeItem('token');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('role');
+  sessionStorage.removeItem('tabRole');
+  
+  // Redirect to login
+  window.location.href = '/login.html';
+}
+
+// ======================
+// 6. TAB SYNCHRONIZATION (ADD THIS AT BOTTOM)
+// ======================
+window.addEventListener('storage', function(event) {
+  // Handle logout from other tabs
+  if (event.key === 'token' && event.newValue === null) {
+    alert('Your session was ended in another tab');
+    logoutAdmin();
+  }
+  
+  // Handle role changes from other tabs
+  if (event.key === 'role' && event.newValue !== 'admin') {
+    alert('Account type changed - redirecting...');
+    logoutAdmin();
+  }
+});
+
 
       const baseUrl = 'http://localhost:3000/api/item/admin'; // New endpoint to show all
       const categoryUrl = 'http://localhost:3000/api/category';

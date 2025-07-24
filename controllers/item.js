@@ -99,6 +99,9 @@ const getItemsByCategory = (req, res) => {
 
 // Get all items with stock and category
 const getAllItemsWithStock = (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = parseInt(req.query.offset) || 0;
+
   const sql = `
     SELECT 
       i.item_id,
@@ -119,9 +122,11 @@ const getAllItemsWithStock = (req, res) => {
     LEFT JOIN item_images ii ON i.item_id = ii.item_id
     WHERE i.deleted_at IS NULL AND (c.deleted_at IS NULL OR c.category_id IS NULL)
     GROUP BY i.item_id
+    ORDER BY i.created_at DESC
+    LIMIT ? OFFSET ?
   `;
 
-  db.query(sql, (err, rows) => {
+  db.query(sql, [limit, offset], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error', details: err });
 
     const formatted = rows.map(row => {
@@ -138,7 +143,7 @@ const getAllItemsWithStock = (req, res) => {
   });
 };
 
-// Get single item
+//single item 
 const getSingleItem = (req, res) => {
   const sql = `
     SELECT i.*, s.quantity, GROUP_CONCAT(ii.image_path) AS extra_images
@@ -148,8 +153,15 @@ const getSingleItem = (req, res) => {
     WHERE i.item_id = ?
     GROUP BY i.item_id
   `;
+  
   db.query(sql, [req.params.id], (err, result) => {
-    if (err) return res.status(500).json({ error: 'Database error', details: err });
+    if (err) {
+      return res.status(500).json({ error: 'Database error', details: err });
+    }
+
+    if (!result || result.length === 0) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
 
     const item = result[0];
     const extra = item.extra_images ? item.extra_images.split(',') : [];
@@ -159,6 +171,7 @@ const getSingleItem = (req, res) => {
     return res.status(200).json({ success: true, result: [item] });
   });
 };
+
 
 // Create item
 const createItem = (req, res) => {
@@ -348,6 +361,47 @@ const searchItems = (req, res) => {
 };
 
 
+const getItemsPaginated = (req, res) => {
+  const offset = parseInt(req.query.offset) || 0;
+  const limit = parseInt(req.query.limit) || 10;
+  const sort = req.query.sort === 'asc' ? 'ASC' : 'DESC'; // default DESC
+
+  const sql = `
+    SELECT 
+      i.*, 
+      s.quantity, 
+      GROUP_CONCAT(ii.image_path) AS extra_images,
+      c.description AS category_name
+    FROM item i
+    LEFT JOIN stock s ON i.item_id = s.item_id
+    LEFT JOIN category c ON i.category_id = c.category_id
+    LEFT JOIN item_images ii ON i.item_id = ii.item_id
+    GROUP BY i.item_id
+    ORDER BY i.item_id ${sort}
+    LIMIT ? OFFSET ?
+  `;
+
+  db.query(sql, [limit, offset], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Database error', details: err });
+
+    const formatted = rows.map(item => {
+      const extra = item?.extra_images ? item.extra_images.split(',') : [];
+      const all = [item.image, ...extra].filter(Boolean);
+      return {
+        ...item,
+        image: all[0] || null,
+        all_images: all
+      };
+    });
+
+    res.status(200).json({ data: formatted });
+  });
+};
+  
+
+
+
+
 module.exports = {
   getAllItems,
   getItemsByCategory,
@@ -358,6 +412,7 @@ module.exports = {
   deleteItem: softDeleteItem, // soft delete
   restoreItem ,
   getAllItemsIncludingDeleted,
-  searchItems                // new
+  searchItems,
+  getItemsPaginated                // new
 };
 

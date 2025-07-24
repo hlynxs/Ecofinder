@@ -2,8 +2,11 @@ const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/category');
 
+
 // Put static/specific routes before dynamic ones
 router.get('/admin/all', categoryController.getAllCategoriesWithDeleted);
+router.get('/paginated', categoryController.getCategoriesPaginated);
+
 
 router.get('/', categoryController.getAllCategories);
 router.post('/', categoryController.createCategory);

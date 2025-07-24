@@ -13,6 +13,7 @@ const {
   getArchivedOrders,
 } = require('../controllers/order');
 
+
 // ADMIN routes
 router.get('/admin', getAllOrdersForAdmin);
 router.put('/admin/:orderId/status', updateOrderStatus);

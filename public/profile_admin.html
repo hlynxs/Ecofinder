@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Complete Profile</title>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- Bootstrap CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="/css/profile.css" />
+</head>
+<body>
+
+  <!-- Header placeholder -->
+  <div id="header">Loading header...</div>
+
+  <!-- Page Content -->
+  <div class="container form mt-5 pt-5">
+    <h2>Complete Your Profile</h2>
+    <img id="profileImagePreview" src="https://via.placeholder.com/120" alt="Profile Picture" />
+
+    <form id="profileForm" enctype="multipart/form-data">
+      <select name="title" id="title" class="form-select mb-3">
+        <option value="">Select Title</option>
+        <option value="Mr.">Mr.</option>
+        <option value="Ms.">Ms.</option>
+        <option value="Mrs.">Mrs.</option>
+      </select>
+
+      <input type="hidden" name="userId" id="userId" />
+
+      <div class="form-row mb-3">
+        <input type="text" name="fname" id="fname" placeholder="First Name" class="form-control mb-2" required />
+        <input type="text" name="lname" id="lname" placeholder="Last Name" class="form-control" required />
+      </div>
+
+      <div class="form-row mb-3">
+        <input type="text" name="addressline" id="addressline" placeholder="Address" class="form-control mb-2" />
+        <input type="text" name="town" id="town" placeholder="Town" class="form-control" />
+      </div>
+
+      <div class="form-row mb-3">
+        <input type="text" name="phone" id="phone" placeholder="Phone" class="form-control mb-2" />
+        <input type="file" name="image" id="image" accept="image/*" class="form-control" />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save Profile</button>
+    </form>
+    
+    <p id="profileMsg" class="mt-3"></p>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+
+      
+  $.ajax({
+  url: 'http://localhost:3000/api/auth/admin-check',
+  method: 'GET',
+  headers: {
+    Authorization: 'Bearer ' + (localStorage.getItem('token') || '')
+  },
+  success: function (res) {
+    console.log('✅ Admin verified:', res.user);
+
+    // Load header and render cart
+    $('#header').load('/header_admin.html', function () {
+      renderCart(); // your custom function
+    });
+  },
+  error: function (xhr) {
+    const defaultMsg = "Only admins can access this page.";
+    const message = xhr.responseJSON?.message || defaultMsg;
+
+    alert(message);
+    localStorage.removeItem('token');
+    window.location.href = '/login.html';
+  }
+});
+
+      if (!token || !userId) {
+        alert("You must be logged in first!");
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Force-load header
+      $('#header').load('/header_admin.html', function (response, status, xhr) {
+        if (status == "error") {
+          console.error("Failed to load header:", xhr.status, xhr.statusText);
+        } else {
+          // FIX: Enable dropdown
+          document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+            new bootstrap.Dropdown(el);
+          });
+
+          // Adjust header links
+          $('#login-link, #register-link').addClass('d-none');
+          $('#user-dropdown').removeClass('d-none');
+
+          // Set user data in header
+          $.get(`/api/users/customers/${userId}`, function (res) {
+            if (res.success && res.data) {
+              const data = res.data;
+              const fullName = `${data.fname || ''} ${data.lname || ''}`.trim();
+              $('#username').text(fullName || 'USER');
+              if (data.image_path) {
+                $('.profile-img').attr('src', `/${data.image_path}`);
+              }
+            }
+          });
+        }
+      });
+
+      $('#userId').val(userId);
+
+      fetchProfileData(userId);
+
+      function fetchProfileData(userId) {
+        $.ajax({
+          url: `/api/users/customers/${userId}`,
+          method: 'GET',
+          success: function (res) {
+            if (res.success && res.data) {
+              const data = res.data;
+              $('#title').val(data.title || '');
+              $('#fname').val(data.fname || '');
+              $('#lname').val(data.lname || '');
+              $('#addressline').val(data.addressline || '');
+              $('#town').val(data.town || '');
+              $('#phone').val(data.phone || '');
+              if (data.image_path) {
+                $('#profileImagePreview').attr('src', `/${data.image_path}`);
+              }
+            }
+          },
+          error: function () {
+            console.warn('No profile found.');
+          }
+        });
+      }
+
+      $('#image').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+          $('#profileImagePreview').attr('src', URL.createObjectURL(file));
+        }
+      });
+
+      $('#profileForm').on('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.set('userId', userId);
+
+        $.ajax({
+          url: '/api/users/update-profile',
+          method: 'POST',
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: function () {
+            $('#profileMsg').text(' Profile saved!').css('color', 'green');
+            fetchProfileData(userId);
+          },
+          error: function (err) {
+            $('#profileMsg').text(' Failed to save.').css('color', 'red');
+            console.error(err);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
