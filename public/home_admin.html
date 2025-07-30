@@ -12,6 +12,9 @@
     crossorigin="anonymous"
   />
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.css"
@@ -19,7 +22,7 @@
     referrerpolicy="no-referrer"
   />
 
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
   <script
     src="https://code.jquery.com/jquery-3.6.4.min.js"
@@ -48,62 +51,197 @@
   <script src="js/home_admin.js"></script>
 
   <style>
-    /* Add some margin below each card */
+    :root {
+      --primary-orange: #FF7B25;
+      --primary-yellow: #FFC837;
+      --dark-orange: #E64A19;
+      --light-yellow: #FFF9C4;
+      --card-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.2);
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      text-align: center;
+    }
+    
+    h2, .card-header {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+    }
+    
+    h2 {
+      color: var(--dark-orange);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      padding-bottom: 15px;
+      margin: 30px auto;
+      display: inline-block;
+    }
+    
+    h2:after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-orange), var(--primary-yellow));
+      border-radius: 2px;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: var(--card-shadow);
+      background: white;
+      max-width: 800px;
+      margin: 0 auto 30px;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-yellow));
+      color: white;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      padding: 1rem 1.5rem;
+      border-bottom: none;
+      text-align: center;
+    }
+    
+    .card-body {
+      padding: 2rem;
+    }
+    
     .chart-card {
       margin-bottom: 2rem;
+      animation: fadeInUp 0.6s ease forwards;
+      width: 100%;
     }
-    /* Responsive canvas height */
-    canvas {
+    
+    .chart-card:nth-child(1) { animation-delay: 0.1s; }
+    .chart-card:nth-child(2) { animation-delay: 0.2s; }
+    .chart-card:nth-child(3) { animation-delay: 0.3s; }
+    
+canvas {
   width: 100% !important;
-  height: 300px !important;
+  height: 400px !important;
+  transition: all 0.3s ease;
+  margin: 0 auto;
 }
+    
+    .container {
+      padding-top: 30px;
+      padding-bottom: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .animate-gradient {
+      animation: gradientBG 8s ease infinite;
+      background-size: 200% 200%;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .card-header {
+        font-size: 1rem;
+        padding: 0.8rem 1rem;
+      }
+      
+      h2 {
+        font-size: 1.8rem;
+      }
+      
+      .card {
+        max-width: 95%;
+      }
+    }
   </style>
 </head>
 <body>
   <div id="header"></div>
 
-  <div class="container mt-5">
-    <h2 class="mb-4">Admin Dashboard</h2>
+  <div class="container mt-4">
+    <h2 class="mb-4 animate__animated animate__fadeIn">Admin Dashboard</h2>
 
-    <div class="row">
-
-      <!-- Address Chart -->
-      <div class="col-lg-6 chart-card">
-        <div class="card shadow-sm">
-          <div class="card-header bg-primary text-white">
-            Customers by Town
-          </div>
-          <div class="card-body">
-            <canvas id="addressChart"></canvas>
-          </div>
+    <!-- Address Chart -->
+    <div class="chart-card">
+      <div class="card">
+        <div class="card-header animate-gradient">
+          <i class="fas fa-map-marker-alt mr-2"></i> Customers by Town
+        </div>
+        <div class="card-body">
+          <canvas id="addressChart"></canvas>
         </div>
       </div>
+    </div>
 
-      <!-- Sales Chart -->
-      <div class="col-lg-6 chart-card">
-        <div class="card shadow-sm">
-          <div class="card-header bg-success text-white">
-            Monthly Sales
-          </div>
-          <div class="card-body">
-            <canvas id="salesChart"></canvas>
-          </div>
+    <!-- Sales Chart -->
+    <div class="chart-card">
+      <div class="card">
+        <div class="card-header animate-gradient">
+          <i class="fas fa-chart-line mr-2"></i> Monthly Sales
+        </div>
+        <div class="card-body">
+          <canvas id="salesChart"></canvas>
         </div>
       </div>
-
-   <div class="col-lg-6 chart-card">
-  <div class="card shadow-sm">
-    <div class="card-header bg-info text-white">
-      Items Sold Distribution
     </div>
-    <div class="card-body">
-      <canvas id="itemsChart"></canvas>
+
+    <!-- Items Chart -->
+    <div class="chart-card">
+      <div class="card">
+        <div class="card-header animate-gradient">
+          <i class="fas fa-boxes mr-2"></i> Items Sold Distribution
+        </div>
+        <div class="card-body">
+          <canvas id="itemsChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
+  <!-- Force footer to load -->
+  <div id="footer"></div>
+  <script>
+    $(function(){
+      $("#footer").load("footer_admin.html"); 
+    });
+  </script>
 
-    </div>
-  </div>
+  <!-- Font Awesome for icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  
+  <script>
+    // Add hover effect to cards
+    $(document).ready(function() {
+      $('.card').hover(
+        function() {
+          $(this).find('canvas').css('transform', 'scale(1.02)');
+        },
+        function() {
+          $(this).find('canvas').css('transform', 'scale(1)');
+        }
+      );
+    });
+  </script>
 </body>
 </html>

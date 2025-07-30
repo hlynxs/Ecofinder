@@ -1,368 +1,1070 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8" />
-  <title>Items</title>
+  <title>Items Management</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+  integrity="sha512-pbQgB94TP8t0uhrWD61FmuqtnuhEv1FvOfEXfOYzgkUoD7GgQul1XJ+OaKXUJ3+e/9d4MFUMzF3cuupJUXTtXg==" 
+  crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
+  <!-- DataTables Buttons Bootstrap 4 CSS -->
+  <link rel="stylesheet"
+    href="https://cdn.datatables.net/buttons/1.6.5/css/buttons.bootstrap4.min.css"
+    integrity="sha512-vWTrt2A9iAn2pK8hNZS26YZRDDUvLiOfyL+MmBEXJizrigtxnpLuLrLOOMm+pcrUJFzGssUwoS6Gofp+TT2deQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.css"
+    integrity="sha512-fjO3Vy3QodX9c6G9AUmr6WuIaEPdGRxBjD7gjatG5gGylzYyrEq3U0q+smkG6CwIY0L8XALRFHh4KPHig0Q1ug=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.6/css/all.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.5/css/buttons.dataTables.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <style>
+    :root {
+      --primary-orange: #FF7B25;
+      --primary-yellow: #FFC837;
+      --dark-orange: #E64A19;
+      --light-yellow: #FFF9C4;
+      --accent-blue: #1976D2;
+      --dark-gray: #2C3E50;
+      --light-gray: #F5F7FA;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-yellow));
+      color: white;
+      padding: 1.25rem 1.5rem;
+      border-bottom: none;
+    }
+    
+    .card-header h3 {
+      margin: 0;
+      font-weight: 600;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    #itable {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    #itable thead th {
+      background-color: var(--dark-gray);
+      color: white;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      border: none;
+      padding: 12px 15px;
+    }
+    
+    #itable tbody tr {
+      transition: all 0.2s ease;
+    }
+    
+    #itable tbody tr:hover {
+      background-color: rgba(255, 200, 55, 0.1);
+      transform: scale(1.005);
+    }
+    
+    #itable tbody td {
+      padding: 12px 15px;
+      vertical-align: middle;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .badge {
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .badge-secondary {
+      background-color: #95a5a6;
+    }
+    
+    .badge-primary {
+      background-color: var(--accent-blue);
+    }
+    
+    .badge-success {
+      background-color: #27ae60;
+    }
+    
+    .badge-danger {
+      background-color: #e74c3c;
+    }
+    
+    .badge-warning {
+      background-color: #f39c12;
+      color: white;
+    }
+    
+    .btn {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-yellow));
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--dark-orange), var(--primary-yellow));
+    }
+    
+    .btn-warning {
+      background: linear-gradient(135deg, #F39C12, #F1C40F);
+      color: white;
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #E74C3C, #C0392B);
+      color: white;
+    }
+    
+    .btn-outline-danger {
+      border: 2px solid #E74C3C;
+      color: #E74C3C;
+      background: transparent;
+    }
+    
+    .btn-outline-success {
+      border: 2px solid #27ae60;
+      color: #27ae60;
+      background: transparent;
+    }
+    
+    .btn-outline-secondary {
+      border: 2px solid #95a5a6;
+      color: #95a5a6;
+      background: transparent;
+    }
+    
+    .input-group {
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    .form-control {
+      border: none;
+      padding: 12px 15px;
+      font-family: 'Roboto', sans-serif;
+    }
+    
+    .form-control:focus {
+      box-shadow: 0 0 0 0.2rem rgba(255, 123, 37, 0.25);
+    }
+    
+    .input-group-append .btn {
+      border-radius: 0 6px 6px 0;
+    }
+    
+    .modal-content {
+      border: none;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .modal-header {
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-yellow));
+      color: white;
+      border-bottom: none;
+    }
+    
+    .modal-title {
+      font-family: 'Oswald', sans-serif;
+      letter-spacing: 0.5px;
+    }
+    
+    .close {
+      color: white;
+      text-shadow: none;
+      opacity: 0.8;
+    }
+    
+    .close:hover {
+      opacity: 1;
+    }
+    
+    /* DataTables buttons styling */
+    .dt-buttons {
+      display: inline-block;
+      margin-bottom: 0;
+    }
+    
+    .dt-buttons .btn {
+      margin-right: 5px;
+      margin-bottom: 0;
+    }
+    
+    /* Animation classes */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    .slide-up {
+      animation: slideUp 0.4s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Pulse animation for status changes */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .pulse {
+      animation: pulse 0.5s ease;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-orange);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--dark-orange);
+    }
+    
+    /* New styles for single line layout */
+    .action-buttons-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .search-container {
+      width: 400px;
+    }
+    
+    .buttons-search-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    
+    /* View mode toggle buttons */
+    .view-mode-toggle {
+      display: flex;
+      margin-left: 10px;
+    }
+    
+    .view-mode-toggle .btn {
+      margin-right: 5px;
+    }
+    
+    .view-mode-toggle .btn.active {
+      background: var(--dark-orange);
+      color: white;
+    }
+    
+    @media (max-width: 992px) {
+      .buttons-search-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .search-container {
+        width: 100%;
+        margin-top: 15px;
+      }
+      
+      .dt-buttons {
+        margin-bottom: 15px;
+      }
+      
+      .view-mode-toggle {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+    }
+    
+    /* Image styling */
+    .item-img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      transition: transform 0.3s ease;
+    }
+    
+    .item-img:hover {
+      transform: scale(1.5);
+      z-index: 10;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    /* Action buttons */
+    .action-btn {
+      font-size: 18px;
+      margin-right: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+      transform: scale(1.2);
+    }
+    
+    .edit-btn {
+      color: var(--accent-blue);
+    }
+    
+    .delete-btn {
+      color: #e74c3c;
+    }
+    
+    .restore-btn {
+      color: #27ae60;
+    }
+    
+    /* Modal form styling */
+    .form-group label {
+      font-weight: 500;
+      color: #555;
+    }
+    
+    .custom-file-label {
+      font-family: 'Roboto', sans-serif;
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+    
+    .custom-file-input:focus ~ .custom-file-label {
+      border-color: var(--primary-orange);
+      box-shadow: 0 0 0 0.2rem rgba(255, 123, 37, 0.25);
+    }
+    
+    /* Image preview in modal */
+    #itemPreview img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #eee;
+      transition: all 0.3s ease;
+    }
+    
+    #itemPreview img:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+  </style>
 
-  <!-- JS -->
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>
-  <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+  <!-- jQuery (must come first) -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+  <!-- Popper.js (for Bootstrap) -->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <!-- DataTables -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"
+    integrity="sha512-BkpSL20WETFylMrcirBahHfSnY++H2O1W+UnEEO4yNIl+jI2+zowyoGJpbtk6bx97fBXf++WJHSSK2MV4ghPcg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.bootstrap4.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.5/js/buttons.html5.min.js"></script>
+  <!-- PDFMake for export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.5/js/buttons.html5.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"></script>
+  <!-- Bootbox for modals -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"
+    integrity="sha512-RdSPYh1WA6BF0RhpisYJVYkOyTzK4HwofJ3Q7ivt/jkpW6Vc8AurL1R+4AUcvn9IwEKAPm/fk7qFZW3OuiUDeg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.js"
+    integrity="sha512-LGHBR+kJ5jZSIzhhdfytPoEHzgaYuTRifq9g5l6ja6/k9NAOsAi5dQh4zQF6JIRB8cAYxTRedERUF+97/KuivQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
-
   <div id="header"></div>
 
-
-  <div class="container mt-4">
-    <button type="button" class="btn btn-info mb-3" data-toggle="modal" data-target="#itemModal">
-      Add Item
-    </button>
-    <div class="table-responsive">
-      <table id="itable" class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>Item ID</th>
-            <th>Item Name</th>
-            <th>Image</th>
-            <th>Description</th>
-            <th>Cost Price</th>
-            <th>Sell Price</th>
-            <th>Quantity</th>
-            <th>Category</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="ibody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <div class="modal fade" id="itemModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title">Item Form</h4>
-          <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+  <div class="container-fluid py-4">
+    <div class="card slide-up">
+      <div class="card-header">
+        <h3 class="mb-0"><i class="fas fa-boxes mr-2"></i>Items Management</h3>
+      </div>
+      <div class="card-body">
+        <div class="action-buttons-container mb-4">
+          <div class="buttons-search-wrapper">
+            <div class="d-flex align-items-center">
+                <!-- Custom PDF Button -->
+              <button class="btn btn-outline-danger mr-3" id="customPdfBtn">
+                <i class="fas fa-file-pdf mr-2"></i> PDF
+              </button>
+              
+              <!-- Add New Item Button -->
+              <button class="btn btn-primary mr-3" id="addNewItemBtn">
+                <i class="fas fa-plus-circle mr-2"></i> Add New Item
+              </button>
+              
+              <!-- View mode toggles -->
+              <div class="view-mode-toggle">
+                <button class="btn btn-secondary pagination-mode active" data-mode="pagination">
+                  <i class="fas fa-list-ol"></i> Pagination
+                </button>
+                <button class="btn btn-secondary infinite-scroll-mode" data-mode="infinite">
+                  <i class="fas fa-infinity"></i> Infinite Scroll
+                </button>
+              </div>
+            </div>
+            
+            <div class="search-container">
+              <div class="input-group">
+                <input type="text" id="itemSearch" class="form-control" placeholder="Search items...">
+                <div class="input-group-append">
+                  <button class="btn btn-primary" type="button" id="searchButton">
+                    <i class="fas fa-search"></i> Search
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="modal-body">
-          <form id="iform" enctype="multipart/form-data">
-            <input type="hidden" id="itemId" name="item_id" />
-            <div class="form-group">
-              <label>Item Name</label>
-              <input type="text" class="form-control" id="name" name="item_name" />
-            </div>
-            <div class="form-group">
-              <label>Description</label>
-              <input type="text" class="form-control" id="desc" name="description" />
-            </div>
-            <div class="form-group">
-              <label>Sell Price</label>
-              <input type="number" class="form-control" id="sell" name="sell_price" />
-            </div>
-            <div class="form-group">
-              <label>Cost Price</label>
-              <input type="number" class="form-control" id="cost" name="cost_price" />
-            </div>
-            <div class="form-group">
-              <label>Quantity</label>
-              <input type="number" class="form-control" id="qty" name="quantity" />
-            </div>
-            <div class="form-group">
-              <label>Category</label>
-              <select class="form-control" id="category" name="category_id"></select>
-            </div>
-            <div class="form-group">
-              <label>Image</label>
-              <input type="file" class="form-control" id="img" name="images" multiple />
-              <div id="itemPreview" class="mt-2"></div>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button id="itemSubmit" type="submit" class="btn btn-primary">Save</button>
-          <button id="itemUpdate" type="submit" class="btn btn-success" style="display: none;">Update</button>
+        
+        <div class="table-responsive fade-in">
+          <table id="itable" class="table table-hover" style="width:100%">
+            <thead>
+              <tr>
+                <th>Item ID</th>
+                <th>Item Name</th>
+                <th>Image</th>
+                <th>Description</th>
+                <th>Cost Price</th>
+                <th>Sell Price</th>
+                <th>Quantity</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ibody">
+              <!-- Item data will be loaded here -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    $(document).ready(function () {
-      sessionStorage.setItem('tabRole', 'admin'); // Mark this as admin tab
-      
-    $('#header').load('/header_admin.html', function () {
-      
-    });
-  $.ajax({
-  url: 'http://localhost:3000/api/auth/admin-check',
-  method: 'GET',
-  headers: {
-    'Authorization': 'Bearer ' + (localStorage.getItem('token') || ''),
-    'X-Tab-Context': 'admin' // MUST ADD THIS NEW HEADER
-  },
-  success: function(res) {
-    console.log('✅ Admin verified:', res.user);
-    if (sessionStorage.getItem('tabRole') !== 'admin') {
-      alert('Security Alert: Please use admin interface for admin accounts');
-      logoutAdmin();
-      return;
-    }
-    // Load header and render cart
-   
-  },
-  error: function(xhr) {
-    // 4. ENHANCED ERROR HANDLING
-    const defaultMsg = "Only admins can access this page.";
-    const message = xhr.responseJSON?.message || defaultMsg;
+  <!-- Edit Item Modal -->
+  <div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-edit mr-2"></i>Item Details</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="iform" enctype="multipart/form-data">
+            <input type="hidden" id="itemId" name="item_id">
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="name" class="font-weight-bold">Item Name</label>
+                <input type="text" class="form-control" id="name" name="item_name" placeholder="Enter item name">
+              </div>
+              <div class="form-group col-md-6">
+                <label for="category" class="font-weight-bold">Category</label>
+                <select class="form-control" id="category" name="category_id">
+                  <option value="">Select category</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="desc" class="font-weight-bold">Description</label>
+              <input type="text" class="form-control" id="desc" name="description" placeholder="Enter description">
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="sell" class="font-weight-bold">Sell Price</label>
+                <input type="number" class="form-control" id="sell" name="sell_price" placeholder="0.00" step="0.01">
+              </div>
+              <div class="form-group col-md-4">
+                <label for="cost" class="font-weight-bold">Cost Price</label>
+                <input type="number" class="form-control" id="cost" name="cost_price" placeholder="0.00" step="0.01">
+              </div>
+              <div class="form-group col-md-4">
+                <label for="qty" class="font-weight-bold">Quantity</label>
+                <input type="number" class="form-control" id="qty" name="quantity" placeholder="0">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="img" class="font-weight-bold">Images</label>
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="img" name="images" multiple>
+                <label class="custom-file-label" for="img">Choose files...</label>
+              </div>
+              <small class="form-text text-muted">You can upload multiple images</small>
+              <div id="itemPreview" class="d-flex flex-wrap mt-3"></div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="itemSubmit">
+            <i class="fas fa-save mr-2"></i>Save Item
+          </button>
+          <button type="button" class="btn btn-success" id="itemUpdate" style="display: none;">
+            <i class="fas fa-sync-alt mr-2"></i>Update Item
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+    $(document).ready(async function () {
+    const API_BASE_URL = 'http://localhost:3000';
+    const ITEM_API_URL = `${API_BASE_URL}/api/item/admin`;
+    const CATEGORY_API_URL = `${API_BASE_URL}/api/category`;
+    const IMAGE_BASE_URL = `${API_BASE_URL}/uploads/`;
     
-    if (xhr.status === 403 && xhr.responseJSON?.message?.includes('interface')) {
-      // Special handling for wrong interface access
-      alert('Admin account detected - redirecting to admin interface');
-      window.location.href = '/home_admin.html';
-    } else {
-      alert(message);
-      logoutAdmin();
+    sessionStorage.setItem('tabRole', 'admin'); // Mark this as admin tab
+    
+    $('#header').load('/header_admin.html', function () {});
+    
+    $.ajax({
+      url: 'http://localhost:3000/api/auth/admin-check',
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + (localStorage.getItem('token') || ''),
+        'X-Tab-Context': 'admin' // MUST ADD THIS HEADER
+      },
+      success: function(res) {
+        console.log('✅ Admin verified:', res.user);
+        
+        // TAB CONTEXT VERIFICATION
+        if (sessionStorage.getItem('tabRole') !== 'admin') {
+          alert('⚠️ Security Alert: Please access items through admin interface');
+          logoutAdmin();
+          return;
+        }
+      },
+      error: function(xhr) {
+        const defaultMsg = "Only admins can access this page.";
+        const message = xhr.responseJSON?.message || defaultMsg;
+        
+        if (xhr.status === 403 && message.includes('interface')) {
+          alert('🔒 Admin account detected - redirecting to admin portal');
+          window.location.href = '/home_admin.html';
+        } else if (xhr.status === 401) {
+          alert('⌛ Session expired - please login again');
+          logoutAdmin();
+        } else {
+          alert(message);
+          logoutAdmin();
+        }
+      }
+    });
+
+ function logoutAdmin() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('role');
+      sessionStorage.removeItem('tabRole');
+      window.location.href = '/login.html';
     }
-  }
-});
 
-function logoutAdmin() {
-  // Clear all authentication data
-  localStorage.removeItem('token');
-  localStorage.removeItem('userId');
-  localStorage.removeItem('role');
-  sessionStorage.removeItem('tabRole');
-  
-  // Redirect to login
-  window.location.href = '/login.html';
-}
-
-// ======================
-// 6. TAB SYNCHRONIZATION (ADD THIS AT BOTTOM)
-// ======================
-window.addEventListener('storage', function(event) {
-  // Handle logout from other tabs
-  if (event.key === 'token' && event.newValue === null) {
-    alert('Your session was ended in another tab');
-    logoutAdmin();
-  }
-  
-  // Handle role changes from other tabs
-  if (event.key === 'role' && event.newValue !== 'admin') {
-    alert('Account type changed - redirecting...');
-    logoutAdmin();
-  }
-});
-
-
-      const baseUrl = 'http://localhost:3000/api/item/admin'; // New endpoint to show all
-      const categoryUrl = 'http://localhost:3000/api/category';
-      const imageBaseUrl = 'http://localhost:3000/uploads/';
-
-
-
-      $.get(categoryUrl, function (res) {
-        if (res.success) {
-          res.data.forEach(cat => {
+    // Load categories for dropdown
+    async function loadCategories() {
+      try {
+        const response = await fetch(CATEGORY_API_URL);
+        const data = await response.json();
+        
+        if (data.success) {
+          $('#category').empty().append('<option value="">Select category</option>');
+          data.data.forEach(cat => {
             $('#category').append(`<option value="${cat.category_id}">${cat.description}</option>`);
           });
         }
-      });
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    }
 
-      const table = $('#itable').DataTable({
-        ajax: {
-          url: baseUrl,
-          dataSrc: 'data'
+    // Initialize DataTable with pagination/infinite scroll
+    const itable = $('#itable').DataTable({
+      ajax: {
+        url: ITEM_API_URL,
+        dataSrc: 'data'
+      },
+      dom: 'rtip',
+      buttons: [
+        {
+          extend: 'pdf',
+          text: '<i class="fas fa-file-pdf"></i> PDF',
+          className: 'btn btn-outline-danger',
+          title: 'Items Management Report',
+          exportOptions: {
+            columns: ':visible'
+          }
+        }
+      ],
+      columns: [
+        { data: 'item_id' },
+        { data: 'item_name' },
+        {
+          data: 'all_images',
+          render: function(images) {
+            if (!images || images.length === 0) return 'No Image';
+            const unique = [...new Set(images)];
+            return unique.map(img => 
+              `<img src="${IMAGE_BASE_URL}${img}" class="item-img" alt="Item Image">`
+            ).join('');
+          }
         },
-        dom: 'Bfrtip',
-        buttons: ['pdf', 'excel'],
-        columns: [
-          { data: 'item_id' },
-          { data: 'item_name' },
-          {
-            data: 'all_images',
-  render: function (images) {
-    if (!images || images.length === 0) return 'No Image';
-    const unique = [...new Set(images)]; // prevent duplicate images
-    return unique.map(img => `<img src="${imageBaseUrl}${img}" width="40" height="40" class="mr-1 mb-1"/>`).join('');
-  }
-          },
-          { data: 'description' },
-          { data: 'cost_price' },
-          { data: 'sell_price' },
-          { data: 'quantity' },
-          { data: 'category_name' },
-          {
-            data: null,
-            render: function (data) {
-  if (data.deleted_at) {
-    return `
-      <a href="#" class="restoreBtn ml-2" data-id="${data.item_id}">
-        <i class="fas fa-undo text-success" style="font-size: 20px;"></i>
-      </a>`;
-  } else {
-    return `
-      <a href="#" class="editBtn" data-id="${data.item_id}">
-        <i class="fas fa-edit text-primary" style="font-size: 20px;"></i>
-      </a>
-      <a href="#" class="deleteBtn ml-2" data-id="${data.item_id}">
-        <i class="fas fa-trash-alt text-danger" style="font-size: 20px;"></i>
-      </a>`;
-  }
-}
-
+        { data: 'description' },
+        { 
+          data: 'cost_price',
+          render: function(data) {
+            return data ? `₱${parseFloat(data).toFixed(2)}` : 'N/A';
           }
-        ]
-      });
+        },
+        { 
+          data: 'sell_price',
+          render: function(data) {
+            return data ? `₱${parseFloat(data).toFixed(2)}` : 'N/A';
+          }
+        },
+        { data: 'quantity' },
+        { data: 'category_name' },
+        {
+          data: 'deleted_at',
+          render: function(data) {
+            if (data) {
+              return '<span class="badge badge-danger">Archived</span>';
+            } else {
+              return '<span class="badge badge-success">Active</span>';
+            }
+          }
+        },
+        {
+          data: null,
+          render: function(data) {
+            if (data.deleted_at) {
+              return `
+                <div class="btn-group" role="group">
+                  <button class="btn btn-sm btn-success restore-btn" data-id="${data.item_id}" title="Restore">
+                    <i class="fas fa-undo"></i> Restore
+                  </button>
+                </div>
+              `;
+            } else {
+              return `
+                <div class="btn-group" role="group">
+                  <button class="btn btn-sm btn-primary edit-btn" data-id="${data.item_id}" title="Edit">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-danger delete-btn" data-id="${data.item_id}" title="Delete">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </div>
+              `;
+            }
+          },
+          orderable: false
+        }
+      ],
+      initComplete: function() {
+        console.log('DataTable initialized');
+        loadCategories();
+      }
+    });
 
-      $('#itemSubmit').click(function (e) {
-        e.preventDefault();
-        const formData = new FormData($('#iform')[0]);
-        $.ajax({
-          url: baseUrl,
+    // Add PDF button click handler
+    $('#customPdfBtn').click(function() {
+      itable.button('.buttons-pdf').trigger();
+    });
+    // View mode toggle functionality
+    $('.pagination-mode').click(function() {
+      $('.view-mode-toggle .btn').removeClass('active');
+      $(this).addClass('active');
+      itable.page.len(10).draw(); // Set to show 10 items per page
+      $('#itable').parent().css('overflow-y', 'hidden');
+      console.log('Pagination mode activated');
+    });
+
+    $('.infinite-scroll-mode').click(function() {
+      $('.view-mode-toggle .btn').removeClass('active');
+      $(this).addClass('active');
+      itable.page.len(-1).draw(); // Show all items
+      $('#itable').parent().css('overflow-y', 'auto').css('max-height', '500px');
+      console.log('Infinite scroll mode activated');
+    });
+
+    // Initialize with pagination mode
+    $('.pagination-mode').click();
+
+    // Search functionality
+    $('#searchButton').click(function() {
+      itable.search($('#itemSearch').val()).draw();
+      $(this).addClass('animate__animated animate__pulse');
+      setTimeout(() => $(this).removeClass('animate__animated animate__pulse'), 1000);
+    });
+
+    $('#itemSearch').keyup(function(e) {
+      if (e.keyCode === 13) {
+        itable.search($(this).val()).draw();
+        $('#searchButton').addClass('animate__animated animate__pulse');
+        setTimeout(() => $('#searchButton').removeClass('animate__animated animate__pulse'), 1000);
+      }
+    });
+
+    // Update file input label
+    $('#img').on('change', function() {
+      let fileName = $(this).val().split('\\').pop();
+      if ($(this)[0].files.length > 1) {
+        fileName = $(this)[0].files.length + ' files selected';
+      }
+      $(this).next('.custom-file-label').html(fileName);
+    });
+ $('#itemModal .close, #itemModal .btn-secondary').click(function() {
+      $('#iform')[0].reset();
+      $('#itemPreview').empty();
+      $('.custom-file-label').html('Choose files...');
+      $('#itemModal').modal('hide');
+    });
+
+    // Reset form when modal is hidden (for any reason)
+    $('#itemModal').on('hidden.bs.modal', function() {
+      $('#iform')[0].reset();
+      $('#itemPreview').empty();
+      $('.custom-file-label').html('Choose files...');
+    });
+    
+    // Add new item button click handler
+    $('#addNewItemBtn').click(function() {
+      $('#itemModal').modal('show');
+      $('#itemSubmit').show();
+      $('#itemUpdate').hide();
+      $('#iform')[0].reset();
+      $('#itemPreview').empty();
+      $('.custom-file-label').html('Choose files...');
+    });
+
+    // Add new item
+    $('#itemSubmit').click(async function(e) {
+      e.preventDefault();
+      const formData = new FormData($('#iform')[0]);
+      
+      try {
+        const response = await fetch(ITEM_API_URL, {
           method: 'POST',
-          data: formData,
-          contentType: false,
-          processData: false,
-          success: function () {
-            Swal.fire('Success', 'Item created!', 'success');
-            $('#itemModal').modal('hide');
-            table.ajax.reload();
-          },
-          error: function (err) {
-            console.error(err);
-            Swal.fire('Error', 'Item creation failed.', 'error');
-          }
+          body: formData
         });
-      });
-
-      $('#itable tbody').on('click', '.editBtn', function (e) {
-  e.preventDefault();
-  const id = $(this).data('id');
-  $('#itemSubmit').hide();
-  $('#itemUpdate').show();
-  $('#itemPreview').empty();
-
-  $.get(`${baseUrl}/${id}`, function (res) {
-    const item = res.result[0];
-    $('#itemId').val(item.item_id);
-    $('#name').val(item.item_name);
-    $('#desc').val(item.description);
-    $('#sell').val(item.sell_price);
-    $('#cost').val(item.cost_price);
-    $('#qty').val(item.quantity);
-    $('#category').val(item.category_id);
-
-    //  Show all images, not just main one
-    const images = [...new Set(item.all_images || [])]; // Deduplicate just in case
-    const previews = images.map(img => `<img src="${imageBaseUrl}${img}" width="100" class="mr-2 mb-2" />`).join('');
-    $('#itemPreview').html(previews);
-
-    $('#itemModal').modal('show');
-  }).fail(function () {
-    Swal.fire('Error', 'Failed to fetch item data.', 'error');
-  });
-});
-
-
-      $('#itemUpdate').click(function (e) {
-        e.preventDefault();
-        const id = $('#itemId').val();
-        const formData = new FormData($('#iform')[0]);
-        $.ajax({
-          url: `${baseUrl}/${id}`,
-          method: 'PUT',
-          data: formData,
-          contentType: false,
-          processData: false,
-          success: function () {
-            Swal.fire('Updated', 'Item updated successfully.', 'success');
-            $('#itemModal').modal('hide');
-            table.ajax.reload();
-          },
-          error: function (err) {
-            console.error(err);
-            Swal.fire('Error', 'Failed to update item.', 'error');
-          }
-        });
-      });
-
-      $('#itable tbody').on('click', '.deleteBtn', function (e) {
-        e.preventDefault();
-        const id = $(this).data('id');
+        
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Failed to create item');
+        }
+        
         Swal.fire({
-          title: 'Are you sure?',
-          text: 'This item will be deleted.',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'Yes, delete it!'
-        }).then(result => {
-          if (result.isConfirmed) {
-            $.ajax({
-              url: `${baseUrl}/${id}`,
-              method: 'DELETE',
-              success: function () {
-                Swal.fire('Deleted!', 'Item has been deleted.', 'success');
-                table.ajax.reload();
-              },
-              error: function (err) {
-                console.error(err);
-                Swal.fire('Error', 'Failed to delete item.', 'error');
-              }
+          icon: 'success',
+          title: 'Success',
+          text: 'Item created successfully!'
+        });
+        
+        $('#itemModal').modal('hide');
+        itable.ajax.reload();
+      } catch (error) {
+        console.error('Error creating item:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Failed to create item'
+        });
+      }
+    });
+
+    // Edit item - load data into modal
+    $('#itable tbody').on('click', '.edit-btn', async function(e) {
+      e.preventDefault();
+      const id = $(this).data('id');
+      
+      try {
+        const response = await fetch(`${ITEM_API_URL}/${id}`);
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Failed to fetch item data');
+        }
+        
+        const item = data.result[0];
+        $('#itemId').val(item.item_id);
+        $('#name').val(item.item_name);
+        $('#desc').val(item.description);
+        $('#sell').val(item.sell_price);
+        $('#cost').val(item.cost_price);
+        $('#qty').val(item.quantity);
+        $('#category').val(item.category_id);
+        
+        // Display existing images
+        $('#itemPreview').empty();
+        const images = [...new Set(item.all_images || [])];
+        images.forEach(img => {
+          $('#itemPreview').append(
+            `<img src="${IMAGE_BASE_URL}${img}" alt="Item Image" class="mr-2 mb-2">`
+          );
+        });
+        
+        $('#itemSubmit').hide();
+        $('#itemUpdate').show();
+        $('#itemModal').modal('show');
+      } catch (error) {
+        console.error('Error loading item:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Failed to load item data'
+        });
+      }
+    });
+
+    // Update item
+    $('#itemUpdate').click(async function(e) {
+      e.preventDefault();
+      const id = $('#itemId').val();
+      const formData = new FormData($('#iform')[0]);
+      
+      try {
+        const response = await fetch(`${ITEM_API_URL}/${id}`, {
+          method: 'PUT',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Failed to update item');
+        }
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Item updated successfully!'
+        });
+        
+        $('#itemModal').modal('hide');
+        itable.ajax.reload();
+      } catch (error) {
+        console.error('Error updating item:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Failed to update item'
+        });
+      }
+    });
+
+    // Delete item (soft delete)
+    $('#itable tbody').on('click', '.delete-btn', function(e) {
+      e.preventDefault();
+      const id = $(this).data('id');
+      
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'This item will be archived. You can restore it later.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, archive it!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch(`${ITEM_API_URL}/${id}`, {
+              method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+              throw new Error(data.message || 'Failed to archive item');
+            }
+            
+            Swal.fire({
+              icon: 'success',
+              title: 'Archived!',
+              text: 'Item has been archived.'
+            });
+            
+            itable.ajax.reload();
+          } catch (error) {
+            console.error('Error archiving item:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: error.message || 'Failed to archive item'
             });
           }
-        });
-      });
-
-      $('#itable tbody').on('click', '.restoreBtn', function (e) {
-  e.preventDefault();
-  const id = $(this).data('id');
-  Swal.fire({
-    title: 'Restore Item?',
-    text: 'Do you want to restore this item?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, restore it!'
-  }).then(result => {
-    if (result.isConfirmed) {
-      $.ajax({
-        url: `http://localhost:3000/api/item/admin/restore/${id}`,
-        method: 'PATCH',
-        success: function () {
-          Swal.fire('Restored!', 'Item has been restored.', 'success');
-          table.ajax.reload(null, false); // stays on same page
-        },
-        error: function (err) {
-          console.error(err);
-          Swal.fire('Error', 'Failed to restore item.', 'error');
         }
       });
-    }
-  });
-});
-
     });
-   
 
-  </script>
+    // Restore item
+    $('#itable tbody').on('click', '.restore-btn', function(e) {
+      e.preventDefault();
+      const id = $(this).data('id');
+      
+      Swal.fire({
+        title: 'Restore Item?',
+        text: 'Do you want to restore this item?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, restore it!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch(`${ITEM_API_URL}/restore/${id}`, {
+              method: 'PATCH'
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+              throw new Error(data.message || 'Failed to restore item');
+            }
+            
+            Swal.fire({
+              icon: 'success',
+              title: 'Restored!',
+              text: 'Item has been restored.'
+            });
+            
+            itable.ajax.reload(null, false);
+          } catch (error) {
+            console.error('Error restoring item:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: error.message || 'Failed to restore item'
+            });
+          }
+        }
+      });
+    });
+
+    // Handle logout from other tabs
+    window.addEventListener('storage', function(event) {
+      if (event.key === 'token' && event.newValue === null) {
+        alert('🔐 Session ended in another tab');
+        logoutAdmin();
+      }
+      
+      if (event.key === 'role' && event.newValue !== 'admin') {
+        alert('⚡ Account type changed - redirecting...');
+        logoutAdmin();
+      }
+    });
+  });
+</script>
+
+<div id="footer"></div>
+
+<script>
+    // Load footer
+    $(document).ready(function() {
+        $('#footer').load('/footer_admin.html');
+    });
+</script>
+
 </body>
 </html>

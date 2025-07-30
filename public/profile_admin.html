@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Complete Profile</title>
 
   <!-- jQuery -->
@@ -9,6 +10,9 @@
 
   <!-- Bootstrap CSS & JS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Your custom CSS -->
   <link rel="stylesheet" href="/css/profile.css" />
@@ -19,40 +23,75 @@
   <div id="header">Loading header...</div>
 
   <!-- Page Content -->
-  <div class="container form mt-5 pt-5">
-    <h2>Complete Your Profile</h2>
-    <img id="profileImagePreview" src="https://via.placeholder.com/120" alt="Profile Picture" />
+  <div class="main-container">
+    <div style="text-align: center; margin-bottom: 15px;">
+      <h2 style="margin-bottom: 5px;"><i class="fas fa-user-edit" style="margin-right: 8px;"></i>Complete Your Profile</h2>
+      <p style="color: #6c757d; margin: 0;">Please fill in your details</p>
+    </div>
 
-    <form id="profileForm" enctype="multipart/form-data">
-      <select name="title" id="title" class="form-select mb-3">
-        <option value="">Select Title</option>
-        <option value="Mr.">Mr.</option>
-        <option value="Ms.">Ms.</option>
-        <option value="Mrs.">Mrs.</option>
-      </select>
+    <div style="position: relative; width: 120px; margin: 0 auto 20px;">
+      <img id="profileImagePreview" src="https://via.placeholder.com/120" alt="Profile Picture" 
+           style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: block;">
+      <label for="image" 
+             style="position: absolute; right: 8px; bottom: 8px; background: #ff4500; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+        <i class="fas fa-camera" style="font-size: 12px;"></i>
+      </label>
+    </div>
 
+    <form id="profileForm" enctype="multipart/form-data" style="margin-top: 10px;">
       <input type="hidden" name="userId" id="userId" />
 
-      <div class="form-row mb-3">
-        <input type="text" name="fname" id="fname" placeholder="First Name" class="form-control mb-2" required />
-        <input type="text" name="lname" id="lname" placeholder="Last Name" class="form-control" required />
+      <div style="margin-bottom: 8px;">
+        <select name="title" id="title" style="width: 100%; padding: 12px 14px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 15px; background-color: #f8f9fa;">
+          <option value="" disabled selected>Select title</option>
+          <option value="Mr.">Mr.</option>
+          <option value="Ms.">Ms.</option>
+          <option value="Mrs.">Mrs.</option>
+        </select>
       </div>
 
-      <div class="form-row mb-3">
-        <input type="text" name="addressline" id="addressline" placeholder="Address" class="form-control mb-2" />
-        <input type="text" name="town" id="town" placeholder="Town" class="form-control" />
+      <div style="display: flex; gap: 15px; margin-bottom: 8px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 180px;">
+          <input type="text" name="fname" id="fname" placeholder="First name" required 
+                 style="width: 100%; padding: 12px 14px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 15px; background-color: #f8f9fa;">
+        </div>
+        <div style="flex: 1; min-width: 180px;">
+          <input type="text" name="lname" id="lname" placeholder="Last name" required 
+                 style="width: 100%; padding: 12px 14px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 15px; background-color: #f8f9fa;">
+        </div>
       </div>
 
-      <div class="form-row mb-3">
-        <input type="text" name="phone" id="phone" placeholder="Phone" class="form-control mb-2" />
-        <input type="file" name="image" id="image" accept="image/*" class="form-control" />
+      <div style="margin-bottom: 8px;">
+        <input type="text" name="addressline" id="addressline" placeholder="Street address" 
+               style="width: 100%; padding: 12px 14px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 15px; background-color: #f8f9fa;">
       </div>
 
-      <button type="submit" class="btn btn-primary">Save Profile</button>
+      <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 180px;">
+          <input type="text" name="town" id="town" placeholder="Town/City" 
+                 style="width: 100%; padding: 12px 14px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 15px; background-color: #f8f9fa;">
+        </div>
+        <div style="flex: 1; min-width: 180px;">
+          <input type="tel" name="phone" id="phone" placeholder="Phone number" 
+                 style="width: 100%; padding: 12px 14px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 15px; background-color: #f8f9fa;">
+        </div>
+      </div>
+
+      <div style="display: none;">
+        <input type="file" name="image" id="image" accept="image/*" />
+      </div>
+
+      <button type="submit" style="width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 15px; font-weight: 500; background-color: #ff4500; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <span>Save Profile</span>
+        <i class="fas fa-fire" style="font-size: 14px;"></i>
+      </button>
+      
+      <p id="profileMsg" style="text-align: center; margin-top: 10px; padding: 10px; border-radius: 6px; font-size: 14px;"></p>
     </form>
-    
-    <p id="profileMsg" class="mt-3"></p>
   </div>
+
+  <!-- Footer placeholder -->
+  <div id="footer">Loading footer...</div>
 
   <script>
     $(document).ready(function () {
@@ -118,6 +157,9 @@
         }
       });
 
+      // FORCE CALL the footer
+      $('#footer').load('/footer_admin.html');
+
       $('#userId').val(userId);
 
       fetchProfileData(userId);
@@ -167,6 +209,8 @@
           success: function () {
             $('#profileMsg').text(' Profile saved!').css('color', 'green');
             fetchProfileData(userId);
+             updateHeaderUser(userId)
+
           },
           error: function (err) {
             $('#profileMsg').text(' Failed to save.').css('color', 'red');

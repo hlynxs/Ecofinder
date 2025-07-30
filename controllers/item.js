@@ -324,16 +324,23 @@ const getAllItemsIncludingDeleted = (req, res) => {
 // Search items by name
 const searchItems = (req, res) => {
   const { term } = req.params;
+
   const sql = `
     SELECT 
       i.item_id, 
       i.item_name, 
       i.sell_price, 
-      i.image AS main_image, 
-      GROUP_CONCAT(ii.image_path) AS extra_images
+      i.image AS main_image,
+      GROUP_CONCAT(ii.image_path) AS extra_images,
+      s.quantity AS stock
     FROM item i
     LEFT JOIN item_images ii ON i.item_id = ii.item_id
-    WHERE i.item_name LIKE ? AND i.deleted_at IS NULL
+    LEFT JOIN stock s ON i.item_id = s.item_id
+    WHERE i.deleted_at IS NULL
+      AND i.item_name LIKE ?  -- Include term filter
+      AND i.category_id IN (
+        SELECT category_id FROM category WHERE deleted_at IS NULL
+      )
     GROUP BY i.item_id
   `;
 
@@ -341,17 +348,19 @@ const searchItems = (req, res) => {
 
   db.execute(sql, [searchTerm], (err, results) => {
     if (err) {
-      console.error(" Search SQL Error:", err.message);
+      console.error("Search SQL Error:", err.message);
       return res.status(500).json({ status: 'error', message: err.message });
     }
 
     const formatted = results.map(row => {
       const extra = row.extra_images ? row.extra_images.split(',') : [];
       const all = [row.main_image, ...extra].filter(Boolean); // merge and remove empty
+
       return {
         item_id: row.item_id,
         item_name: row.item_name,
         sell_price: row.sell_price,
+        stock: row.stock ?? 0, // handle null values safely
         images: all
       };
     });
@@ -409,10 +418,10 @@ module.exports = {
   getSingleItem,
   createItem,
   updateItem,
-  deleteItem: softDeleteItem, // soft delete
+  deleteItem: softDeleteItem, 
   restoreItem ,
   getAllItemsIncludingDeleted,
   searchItems,
-  getItemsPaginated                // new
+  getItemsPaginated                
 };
 

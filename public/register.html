@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register</title>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 </head>
 <body>
-
   <form id="registerForm">
     <h2>Register</h2>
     <input type="text" name="name" placeholder="Full Name" required>
@@ -37,7 +38,7 @@
         contentType: 'application/json',
         data: JSON.stringify(formData),
         success: function (res) {
-          $('#message').text(res.message || 'Registration successful').css('color', 'green');
+          $('#message').text(res.message || 'Registration successful').css('color', '#4CAF50');
           setTimeout(function () {
             window.location.href = 'login.html';
           }, 1000);
@@ -55,11 +56,10 @@
             msg = error.sqlMessage;
           }
 
-          $('#message').text(msg).css('color', 'red');
+          $('#message').text(msg).css('color', '#ff4444');
         }
       });
     });
   </script>
-
 </body>
 </html>

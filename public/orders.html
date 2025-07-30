@@ -4,53 +4,218 @@
   <meta charset="UTF-8" />
   <title>My Orders</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
+    :root {
+      --primary-color: #eb2525;
+      --primary-hover: #d83f1d;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --info-color: #3b82f6;
+      --light-bg: #f8fafc;
+      --border-color: #e2e8f0;
+      --text-muted: #64748b;
+    }
+    
+    body {
+      background-color: #f8fafc;
+      font-family: 'Roboto', sans-serif;
+    }
+    
+    .container {
+      max-width: 1200px;
+    }
+    
+    h2 {
+      font-weight: 600;
+      color: #1e293b;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 12px;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    
     .order-card {
-      border: 1px solid #dee2e6;
-      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
       padding: 20px;
-      margin-bottom: 20px;
-      background: #f9f9f9;
+      margin-bottom: 24px;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+    
+    .order-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
     .order-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px dashed #ccc;
-      margin-bottom: 10px;
-      padding-bottom: 5px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
     }
-    .order-items {
-      margin-top: 10px;
-    }
+    
     .order-status {
-      font-weight: bold;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      white-space: nowrap;
     }
-    .order-status.Pending { color: orange; }
-    .order-status.Completed { color: green; }
-    .order-status.Cancelled,
-    .order-status.Rejected { color: red; }
-    .order-status.InProgress { color: #0d6efd; }
-    .order-status.Delivered { color: teal; }
+    
+    .order-status.Pending { 
+      background-color: #fffbeb;
+      color: var(--warning-color);
+      border: 1px solid #fde68a;
+    }
+    .order-status.Completed { 
+      background-color: #ecfdf5;
+      color: var(--success-color);
+      border: 1px solid #a7f3d0;
+    }
+    .order-status.Cancelled, 
+    .order-status.Rejected { 
+      background-color: #fef2f2;
+      color: var(--danger-color);
+      border: 1px solid #fecaca;
+    }
+    .order-status.InProgress { 
+      background-color: #eff6ff;
+      color: var(--primary-color);
+      border: 1px solid #bfdbfe;
+    }
+    .order-status.Delivered { 
+      background-color: #f0fdfa;
+      color: #0d9488;
+      border: 1px solid #99f6e4;
+    }
+    
+    .order-items {
+      margin-top: 16px;
+    }
+    
     .star {
       font-size: 24px;
       cursor: pointer;
+      transition: transform 0.2s;
     }
+    
+    .star:hover {
+      transform: scale(1.1);
+    }
+    
     .text-warning {
-      color: #ffc107 !important;
+      color: var(--warning-color) !important;
     }
+    
+    .list-group-item {
+      border-color: var(--border-color);
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .btn-outline-primary {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-outline-secondary {
+      color: var(--text-muted);
+      border-color: var(--border-color);
+    }
+    
+    .modal-content {
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-footer {
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .form-control {
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      padding: 10px 12px;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .empty-state i {
+      font-size: 48px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .orders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(48%, 1fr));
+      gap: 24px;
+    }
+
+    .track-text {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .track-text:before {
+      content: "🛒";
+      font-size: 1.1em;
+    }
+
+    .purchase-count {
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    
   </style>
 </head>
 <body>
 
 <div id="header"></div>
 
-<div class="container mt-4">
-  <h2 class="mb-4">My Orders</h2>
-  <div id="ordersList"></div>
+<div class="container mt-5 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">MY ORDERS</h2>
+    <div class="track-text">TRACK YOUR ORDER HISTORY | <span class="purchase-count">0 PURCHASES</span></div>
+  </div>
+  <div id="ordersList" class="orders-grid"></div>
 </div>
 
 <!-- Review Modal -->
@@ -68,9 +233,9 @@
           <input type="hidden" name="item_id" id="item_id">
 
           <!-- Star Rating -->
-          <div class="form-group">
-            <label>Rating</label><br/>
-            <div id="starRating">
+          <div class="form-group mb-4">
+            <label class="form-label">Rating</label><br/>
+            <div id="starRating" class="d-flex gap-2">
               <i class="fa fa-star star" data-value="1"></i>
               <i class="fa fa-star star" data-value="2"></i>
               <i class="fa fa-star star" data-value="3"></i>
@@ -81,13 +246,13 @@
           </div>
 
           <div class="form-group">
-            <label for="review_text">Review</label>
-            <textarea class="form-control" name="review_text" id="review_text" rows="4" required></textarea>
+            <label for="review_text" class="form-label">Review</label>
+            <textarea class="form-control" name="review_text" id="review_text" rows="4" placeholder="Share your experience with this product..." required></textarea>
           </div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary">Submit Review</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>
     </div>
@@ -180,7 +345,7 @@
   
     $.get(`/api/users/customers/${userId}`, function (profileRes) {
       if (!profileRes.success || !profileRes.data.customer_id) {
-        $('#ordersList').html('<p class="text-danger">No customer profile found.</p>');
+        $('#ordersList').html('<div class="empty-state"><i class="fas fa-box-open"></i><h4>No customer profile found</h4><p>Please complete your profile to view orders</p></div>');
         return;
       }
   
@@ -190,62 +355,106 @@
       $.get(`/api/reviews/customer/${customerId}`, function (reviewRes) {
         const existingReviews = reviewRes?.data || [];
   
-        // Now fetch orders
-        $.get(`/api/orders/customer/${customerId}`, function (res) {
-          if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
-            $('#ordersList').html('<p class="text-muted">You have no orders yet.</p>');
-            return;
-          }
-  
-          let html = '';
-          res.data.forEach(order => {
-            html += `
-              <div class="order-card">
-                <div class="order-header">
-                  <div><strong>Status:</strong> <span class="order-status ${order.status.replace(/\s/g, '')}">${order.status}</span></div>
+// Now fetch orders
+$.get(`/api/orders/customer/${customerId}`, function (res) {
+  if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
+    $('#ordersList').html('<div class="empty-state"><i class="fas fa-shopping-bag"></i><h4>No orders yet</h4><p>Your order history will appear here</p></div>');
+    $('.purchase-count').text('0 PURCHASES');
+    return;
+  }
+
+  // First create an array with original order numbers
+  const ordersWithNumbers = [...res.data]
+    .sort((a, b) => new Date(a.date_placed) - new Date(b.date_placed)) // oldest first
+    .map((order, index) => ({
+      ...order,
+      permanentNumber: index + 1 // assign permanent numbers
+    }));
+
+  // Then sort for display (newest first)
+  const displayOrders = [...ordersWithNumbers].sort((a, b) => 
+    new Date(b.date_placed) - new Date(a.date_placed)
+  );
+
+  // Update purchase count
+  const purchaseCount = displayOrders.length;
+  $('.purchase-count').text(`${purchaseCount} ${purchaseCount === 1 ? 'PURCHASE' : 'PURCHASES'}`);
+
+  let html = '';
+  displayOrders.forEach((order) => {
+    html += `
+      <div class="order-card">
+        <div class="order-header">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <div class="d-flex align-items-center gap-3">
+              <span class="text-muted" style="min-width: 70px;">Order #${order.permanentNumber}</span>
+              <span class="fw-medium">${new Date(order.date_placed).toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</span>
+            </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                      <span class="text-muted">ID: ${order.orderinfo_id}</span>
+                      <span class="order-status ${order.status.replace(/\s/g, '')}">${order.status}</span>
+                    </div>
+                  </div>
                 </div>
-                <div><strong>Date Placed:</strong> ${order.date_placed}</div>
-                <div><strong>Shipping:</strong> ${order.region} - ₱${parseFloat(order.rate).toFixed(2)}</div>
                 <div class="order-items">
-                  <strong>Items:</strong>
-                  <ul class="list-group mt-2">`;
-  
+                  <div class="mb-2"><strong>Shipping to:</strong> ${order.region} - ₱${parseFloat(order.rate).toFixed(2)}</div>
+                  <h6 class="mb-3">Items Ordered</h6>
+                  <ul class="list-group">`;
+
             if (Array.isArray(order.items)) {
               order.items.forEach(item => {
                 if (!item.item_id) return;
-  
+
                 const hasReviewed = existingReviews.some(r =>
                   r.item_id === item.item_id && r.orderinfo_id === order.orderinfo_id
                 );
-  
+
                 html += `
-                  <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                      ${item.item_name} x ${item.quantity}
-                      ${order.status === 'Delivered' ?
-                        `<br/><button 
-                        class="btn btn-sm btn-outline-${hasReviewed ? 'secondary' : 'primary'} mt-1"
-                       ${hasReviewed ? 'disabled' : `onclick="leaveReview(${order.orderinfo_id}, ${customerId}, ${item.item_id})"`}
-                                  >
-                       ${hasReviewed ? 'Already Reviewed' : 'Leave a Review'}
-                       </button>` : ''}  
+                  <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div class="fw-medium">${item.item_name}</div>
+                        <div class="text-muted">Quantity: ${item.quantity}</div>
+                        ${order.status === 'Delivered' ?
+                          `<button 
+                            class="btn btn-sm mt-2 ${hasReviewed ? 'btn-outline-secondary' : 'btn-outline-primary'}"
+                            ${hasReviewed ? 'disabled' : `onclick="leaveReview(${order.orderinfo_id}, ${customerId}, ${item.item_id})"`}
+                          >
+                            <i class="fas fa-${hasReviewed ? 'check' : 'pen'} me-1"></i>
+                            ${hasReviewed ? 'Reviewed' : 'Leave Review'}
+                          </button>` : ''}  
+                      </div>
+                      <div class="fw-bold">₱${(item.quantity * item.price).toFixed(2)}</div>
                     </div>
-                    <span>₱${(item.quantity * item.price).toFixed(2)}</span>
                   </li>`;
               });
             } else {
               html += `<li class="list-group-item text-danger">No items found for this order</li>`;
             }
-  
+
             html += `</ul></div></div>`;
           });
-  
+
           $('#ordersList').html(html);
         });
       });
     });
   });
-  </script>
-  
+</script>
+
+<div id="footer"></div>
+
+<script>
+  $(document).ready(function() {
+    $('#footer').load('footer.html');
+  });
+</script>
 </body>
 </html>

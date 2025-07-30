@@ -4,25 +4,75 @@
   <meta charset="UTF-8">
   <title>Checkout</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
+    :root {
+      --primary-orange: #FF6B35;
+      --primary-red: #EF3E36;
+      --primary-yellow: #FFD166;
+      --gradient: linear-gradient(135deg, var(--primary-orange), var(--primary-red));
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      padding-top: 60px; /* Added for fixed header */
+      padding-bottom: 60px; /* Added for footer */
+    }
+    
+    h2, h3, h4, h5, h6 {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    .main-content {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 30px;
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+    
+    h2 {
+      color: #ff1307;
+      text-transform: uppercase;
+      border-bottom: 3px solid #ffc107;
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+    
     .checkout-card {
       display: flex;
-      gap: 1rem;
+      gap: 1.5rem;
       align-items: center;
-      background-color: #f8f9fa;
-      border: 1px solid #ddd;
-      padding: 15px;
-      border-radius: 10px;
+      background-color: white;
+      border: none;
+      padding: 20px;
+      border-radius: 8px;
       margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .checkout-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
 
     .checkout-card img {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       object-fit: contain;
-      border-radius: 5px;
-      background: #fff;
+      border-radius: 8px;
+      background: white;
+      padding: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .checkout-details {
@@ -30,150 +80,261 @@
     }
 
     .checkout-details h6 {
-      margin: 0;
-      font-weight: bold;
+      margin: 0 0 8px 0;
+      font-weight: 700;
+      font-family: 'Oswald', sans-serif;
+      color: #222;
+      font-size: 1.1rem;
     }
 
     .checkout-details small {
       color: #666;
+      display: block;
+      margin-bottom: 4px;
+    }
+    
+    .form-label {
+      font-weight: 500;
+      color: #444;
+      margin-bottom: 8px;
+    }
+    
+    .form-select {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 1rem;
+    }
+    
+    .form-select:focus {
+      border-color:#ff1307;;
+      box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
+    }
+    
+    #checkoutForm {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    #checkoutForm div.mb-3 {
+      padding: 15px;
+      background: #fff9f5;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    #checkoutForm div.mb-3 div {
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+    }
+    
+    #checkoutForm strong {
+      color: #ff1307;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 500;
+    }
+    
+    .btn-primary {
+      background: var(--gradient);
+      border: none;
+      padding: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(239, 62, 54, 0.3);
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-red), var(--primary-orange));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 62, 54, 0.4);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-primary:disabled {
+      background: #ccc;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+        margin: 20px 15px;
+      }
+      
+      body {
+        padding-top: 56px;
+      }
+      
+      .checkout-card {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .checkout-card img {
+        width: 120px;
+        height: 120px;
+      }
     }
   </style>
 </head>
 <body>
-<div class="container mt-4">
-  <h2 class="mb-4">Checkout</h2>
+  <!-- Header will be loaded here -->
+  <div id="header"></div>
 
-  <!-- 🛍️ Product Cards -->
-  <div id="cartSummary"></div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <h2 class="mb-4">Checkout</h2>
 
-  <!-- 🚚 Shipping & Totals -->
-  <form id="checkoutForm" class="mt-4">
-    <div class="mb-3">
-      <label for="shippingRegion" class="form-label">Select Shipping Region</label>
-      <select id="shippingRegion" class="form-select" required>
-        <option value="">-- Choose Region --</option>
-      </select>
-    </div>
+    <!-- Product Cards -->
+    <div id="cartSummary"></div>
 
-    <div class="mb-3">
-      <div><strong>Shipping Rate:</strong> ₱<span id="shippingRate">0.00</span></div>
-      <div><strong>Items Total:</strong> ₱<span id="itemsTotal">0.00</span></div>
-      <div><strong>Grand Total:</strong> ₱<span id="grandTotal">0.00</span></div>
-    </div>
+    <!-- Shipping & Totals -->
+    <form id="checkoutForm" class="mt-4">
+      <div class="mb-3">
+        <label for="shippingRegion" class="form-label">Select Shipping Region</label>
+        <select id="shippingRegion" class="form-select" required>
+          <option value="">-- Choose Region --</option>
+        </select>
+      </div>
 
-    <button type="submit" class="btn btn-primary w-100">Confirm Order</button>
-  </form>
-</div>
+      <div class="mb-3">
+        <div><strong>Shipping Rate:</strong> ₱<span id="shippingRate">0.00</span></div>
+        <div><strong>Items Total:</strong> ₱<span id="itemsTotal">0.00</span></div>
+        <div><strong>Grand Total:</strong> ₱<span id="grandTotal">0.00</span></div>
+      </div>
 
-<script>
-  let shippingRates = [];
-  let checkoutCart = [];
-  
-  $(document).ready(function () {
-    checkoutCart = JSON.parse(localStorage.getItem('checkoutCart')) || [];
-  
-    const itemsTotal = checkoutCart.reduce((sum, item) => sum + item.quantity * item.price, 0);
-    $('#itemsTotal').text(itemsTotal.toFixed(2));
-    $('#grandTotal').text(itemsTotal.toFixed(2));
-  
-    let cartHtml = '';
-    checkoutCart.forEach(item => {
-      const subtotal = item.price * item.quantity;
-      cartHtml += `
-        <div class="checkout-card">
-          <img src="/uploads/${item.image_path}" alt="${item.name}">
-          <div class="checkout-details">
-            <h6>${item.name}</h6>
-            <small>Price: ₱${parseFloat(item.price).toFixed(2)}</small><br>
-            <small>Quantity: ${item.quantity}</small><br>
-            <strong>Subtotal: ₱${subtotal.toFixed(2)}</strong>
-          </div>
-        </div>`;
+      <button type="submit" class="btn btn-primary w-100">Confirm Order</button>
+    </form>
+  </div>
+
+  <!-- Footer will be loaded here -->
+  <div id="footer"></div>
+
+  <script>
+    // Load header and footer
+    $(function() {
+      $("#header").load("header.html");
+      $("#footer").load("footer.html");
     });
-    $('#cartSummary').html(cartHtml);
-  
-    $.get('/api/orders/shipping', function (res) {
-      if (res.success && Array.isArray(res.data)) {
-        shippingRates = res.data;
-        res.data.forEach(region => {
-          $('#shippingRegion').append(`
-            <option value="${region.shipping_id}" data-rate="${region.rate}">
-              ${region.region} (₱${parseFloat(region.rate).toFixed(2)})
-            </option>
-          `);
-        });
-      }
-    });
-  
-    $('#shippingRegion').on('change', function () {
-      const selectedRate = parseFloat($(this).find(':selected').data('rate')) || 0;
-      $('#shippingRate').text(selectedRate.toFixed(2));
-      const newTotal = itemsTotal + selectedRate;
-      $('#grandTotal').text(newTotal.toFixed(2));
-    });
-  
-    $('#checkoutForm').on('submit', function (e) {
-      e.preventDefault();
-  
-      const shipping_id = $('#shippingRegion').val();
-      if (!shipping_id) return alert("Please select a shipping region.");
-  
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
-      const datePlaced = new Date().toISOString().split('T')[0];
-  
-      // Disable button and show loading
-      const $button = $('#checkoutForm button[type="submit"]');
-      $button.prop('disabled', true).text('Placing Order...');
-  
-      $.get(`/api/users/customers/${userId}`, function (res) {
-        if (!res.success || !res.data || !res.data.customer_id) {
-          $button.prop('disabled', false).text('Confirm Order');
-          return alert("Cannot place order. Please complete your profile first.");
+
+    let shippingRates = [];
+    let checkoutCart = [];
+    
+    $(document).ready(function () {
+      checkoutCart = JSON.parse(localStorage.getItem('checkoutCart')) || [];
+    
+      const itemsTotal = checkoutCart.reduce((sum, item) => sum + item.quantity * item.price, 0);
+      $('#itemsTotal').text(itemsTotal.toFixed(2));
+      $('#grandTotal').text(itemsTotal.toFixed(2));
+    
+      let cartHtml = '';
+      checkoutCart.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        cartHtml += `
+          <div class="checkout-card">
+            <img src="/uploads/${item.image_path}" alt="${item.name}">
+            <div class="checkout-details">
+              <h6>${item.name}</h6>
+              <small>Price: ₱${parseFloat(item.price).toFixed(2)}</small>
+              <small>Quantity: ${item.quantity}</small>
+              <strong>Subtotal: ₱${subtotal.toFixed(2)}</strong>
+            </div>
+          </div>`;
+      });
+      $('#cartSummary').html(cartHtml);
+    
+      $.get('/api/orders/shipping', function (res) {
+        if (res.success && Array.isArray(res.data)) {
+          shippingRates = res.data;
+          res.data.forEach(region => {
+            $('#shippingRegion').append(`
+              <option value="${region.shipping_id}" data-rate="${region.rate}">
+                ${region.region} (₱${parseFloat(region.rate).toFixed(2)})
+              </option>
+            `);
+          });
         }
-  
-        const orderPayload = {
-          customer_id: res.data.customer_id,
-          date_placed: datePlaced,
-          shipping_id,
-          status: 'Pending',
-          items: checkoutCart
-        };
-  
-        $.ajax({
-          url: '/api/orders',
-          method: 'POST',
-          contentType: 'application/json',
-          headers: { Authorization: `Bearer ${token}` },
-          data: JSON.stringify(orderPayload),
-          success: function (res) {
-            if (res.success) {
-              alert('Order placed!');
-  
-              let cart = JSON.parse(localStorage.getItem('cart')) || [];
-              const updatedCart = cart.filter(cartItem => {
-                return !checkoutCart.some(checkedOut => checkedOut.id === cartItem.id);
-              });
-  
-              localStorage.setItem('cart', JSON.stringify(updatedCart));
-              localStorage.removeItem('checkoutCart');
-  
-              window.location.href = '/orders.html';
-            } else {
-              alert('Failed to place order.');
+      });
+    
+      $('#shippingRegion').on('change', function () {
+        const selectedRate = parseFloat($(this).find(':selected').data('rate')) || 0;
+        $('#shippingRate').text(selectedRate.toFixed(2));
+        const newTotal = itemsTotal + selectedRate;
+        $('#grandTotal').text(newTotal.toFixed(2));
+      });
+    
+      $('#checkoutForm').on('submit', function (e) {
+        e.preventDefault();
+    
+        const shipping_id = $('#shippingRegion').val();
+        if (!shipping_id) return alert("Please select a shipping region.");
+    
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        const datePlaced = new Date().toISOString().split('T')[0];
+    
+        // Disable button and show loading
+        const $button = $('#checkoutForm button[type="submit"]');
+        $button.prop('disabled', true).text('Placing Order...');
+    
+        $.get(`/api/users/customers/${userId}`, function (res) {
+          if (!res.success || !res.data || !res.data.customer_id) {
+            $button.prop('disabled', false).text('Confirm Order');
+            return alert("Cannot place order. Please complete your profile first.");
+          }
+    
+          const orderPayload = {
+            customer_id: res.data.customer_id,
+            date_placed: datePlaced,
+            shipping_id,
+            status: 'Pending',
+            items: checkoutCart
+          };
+    
+          $.ajax({
+            url: '/api/orders',
+            method: 'POST',
+            contentType: 'application/json',
+            headers: { Authorization: `Bearer ${token}` },
+            data: JSON.stringify(orderPayload),
+            success: function (res) {
+              if (res.success) {
+                alert('Order placed!');
+    
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const updatedCart = cart.filter(cartItem => {
+                  return !checkoutCart.some(checkedOut => checkedOut.id === cartItem.id);
+                });
+    
+                localStorage.setItem('cart', JSON.stringify(updatedCart));
+                localStorage.removeItem('checkoutCart');
+    
+                window.location.href = '/orders.html';
+              } else {
+                alert('Failed to place order.');
+                $button.prop('disabled', false).text('Confirm Order');
+              }
+            },
+            error: function (err) {
+              console.error(err);
+              alert('Error placing order.');
               $button.prop('disabled', false).text('Confirm Order');
             }
-          },
-          error: function (err) {
-            console.error(err);
-            alert('Error placing order.');
-            $button.prop('disabled', false).text('Confirm Order');
-          }
+          });
         });
       });
     });
-  });
   </script>
-  
 </body>
 </html>

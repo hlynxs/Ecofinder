@@ -132,6 +132,28 @@ window.addEventListener('storage', function(event) {
             $('#statusModal').modal('show');
         });
 
+        // Add these right after the existing event listeners (but still inside the function)
+    $(document).on('click', '.infinite-scroll-mode', function() {
+        $('.view-mode-toggle .btn').removeClass('active');
+        $(this).addClass('active');
+        isInfiniteScrollActive = true;
+        currentPage = 1;
+        hasMoreUsers = true;
+        $('#paginationContainer').hide();
+        $(window).on('scroll', handleInfiniteScroll);
+        renderUsers();
+    });
+
+    $(document).on('click', '.pagination-mode', function() {
+        $('.view-mode-toggle .btn').removeClass('active');
+        $(this).addClass('active');
+        isInfiniteScrollActive = false;
+        $('#paginationContainer').show();
+        $(window).off('scroll', handleInfiniteScroll);
+        setupPagination();
+        renderUsers();
+    });
+
         // Pagination
         $(document).on('click', '.page-link', function(e) {
             e.preventDefault();

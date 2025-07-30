@@ -119,26 +119,30 @@
         if (res.status === 'success' && res.data.length > 0) {
           let html = '';
           res.data.forEach(item => {
-            const images = item.images || [];
-            const imgTag = images.length > 0
-              ? `<img src="/uploads/${images[0]}" class="card-img-top" style="height:200px; object-fit:contain;">`
-              : '<div class="text-muted">No image</div>';
+  const images = item.images || [];
+  const imgTag = images.length > 0
+    ? `<img src="/uploads/${images[0]}" class="card-img-top" style="height:200px; object-fit:contain;">`
+    : '<div class="text-muted">No image</div>';
 
-            html += `
-              <div class="col-md-3">
-                <div class="card mb-4 product-card">
-                  ${imgTag}
-                  <div class="card-body">
-                    <h5 class="card-title">${item.item_name}</h5>
-                    <p class="card-text">₱${parseFloat(item.sell_price).toFixed(2)}</p>
-                    <button class="btn btn-primary add-to-cart-btn"
-                      data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>`;
-          });
+  const stockText = item.stock !== undefined ? `${item.stock} available` : 'N/A';
+
+  html += `
+    <div class="col-md-3">
+      <div class="card mb-4 product-card">
+        ${imgTag}
+        <div class="card-body">
+          <h5 class="card-title">${item.item_name}</h5>
+          <p class="card-text">₱${parseFloat(item.sell_price).toFixed(2)}</p>
+          <p class="card-text text-success">Stock: ${stockText}</p>
+          <button class="btn btn-primary add-to-cart-btn"
+            data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>`;
+});
+
 
           $('#searchResults').html(html);
         } else {

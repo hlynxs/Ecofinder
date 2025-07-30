@@ -1,0 +1,48 @@
+<script>
+  window.addEventListener('scroll', function () {
+    const footer = document.getElementById('page-footer');
+    if (window.scrollY > 100) {
+      footer.style.display = 'block';
+    } else {
+      footer.style.display = 'none';
+    }
+  });
+</script>
+<footer class="mt-5 text-light" style="background-color: black; border-top: 3px solid #ff4500;">
+  <div class="container py-4">
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <h5 class="text-uppercase" style="color: #ffcc00;">DRIFT N' DASH</h5>
+        <p class="text-white">Your one stop shop for premium diecast cars. Race into a new level of online shopping with Drift N' Dash. Feel the heat, live the speed!</p>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h6 class="text-uppercase" style="color: #ff4500;">Quick Links</h6>
+        <ul class="list-unstyled">
+          <li><a href="/dashboard.html" class="text-decoration-none text-light hover-orange">Home</a></li>
+          <li><a href="/cart.html" class="text-decoration-none text-light hover-orange">My Cart</a></li>
+          <li><a href="/orders.html" class="text-decoration-none text-light hover-orange">My Orders</a></li>
+          <li><a href="/reviews.html" class="text-decoration-none text-light hover-orange">My Reviews</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h6 class="text-uppercase" style="color: #ff4500;">Connect with Us</h6>
+        <div>
+          <a href="#" class="text-light me-3 hover-orange"><i class="fab fa-facebook fa-lg"></i></a>
+          <a href="#" class="text-light me-3 hover-orange"><i class="fab fa-twitter fa-lg"></i></a>
+          <a href="#" class="text-light me-3 hover-orange"><i class="fab fa-instagram fa-lg"></i></a>
+          <a href="#" class="text-light hover-orange"><i class="fab fa-tiktok fa-lg"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-3 text-white small">
+      &copy; 2025 Drift N' Dash. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<style>
+  .hover-orange:hover {
+    color: #ff4500 !important;
+    transition: color 0.3s ease;
+  }
+</style>

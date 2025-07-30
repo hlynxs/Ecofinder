@@ -164,31 +164,28 @@
   function logoutUser() {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    localStorage.removeItem('cart');
     window.location.href = '/login.html';
   }
 
-  function updateCartCount() {
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
+  setInterval(function () {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      localStorage.removeItem('cart');
+    }
+  }, 300000);
 
-  if (!token || !userId) {
-    $('#cart-count').text(0); // Clear cart count if not logged in
-    return;
+  function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    $('#cart-count').text(totalQty);
   }
 
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  $('#cart-count').text(cart.length);
-}
-
-
-  $(document).ready(function () {
+  function updateHeaderUser() {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
 
     if (token && userId) {
-      $('#login-link, #register-link').addClass('d-none');
-      $('#user-dropdown').removeClass('d-none');
-
       $.get(`/api/users/customers/${userId}`, function (res) {
         if (res.success && res.data) {
           const data = res.data;
@@ -199,12 +196,22 @@
           }
         }
       });
+    }
+  }
+
+  $(document).ready(function () {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+
+    if (token && userId) {
+      $('#login-link, #register-link').addClass('d-none');
+      $('#user-dropdown').removeClass('d-none');
+      updateHeaderUser(); // ✅ Initial call on page load
     } else {
       $('#login-link, #register-link').removeClass('d-none');
       $('#user-dropdown').addClass('d-none');
     }
 
-    //  Update cart count on every page load
     updateCartCount();
   });
 </script>
