@@ -23,7 +23,6 @@ router.get('/verify', isAuthenticatedUser, (req, res) => {
   });
 });
 
-// New endpoint for tab context validation
 router.get('/validate-context', isAuthenticatedUser,
   (req, res) => {
     const tabContext = req.headers['x-tab-context'];

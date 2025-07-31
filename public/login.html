@@ -37,18 +37,40 @@ $(document).ready(function () {
       success: function (response) {
         const user = response.user;
         const token = response.token;
+        const userId = user.id || user.user_id;
 
         // Save to localStorage
         localStorage.setItem('token', token);
-        localStorage.setItem('userId', user.id || user.user_id);
+        localStorage.setItem('userId', userId);
         localStorage.setItem('role', user.role.toLowerCase());
-        
-        // Redirect
+
+        // Redirect admin immediately
         if (user.role === 'Admin') {
           window.location.href = '/home_admin.html';
-        } else {
-          window.location.href = '/profile.html';
+          return;
         }
+
+        // Check if customer profile exists
+        $.ajax({
+          type: 'GET',
+          url: `http://localhost:3000/api/users/customers/${userId}`,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          success: function (profileResponse) {
+            // If profile data exists, go to dashboard
+            if (profileResponse && Object.keys(profileResponse).length > 0) {
+              window.location.href = '/dashboard.html';
+            } else {
+              // Otherwise go to profile creation
+              window.location.href = '/profile.html';
+            }
+          },
+          error: function () {
+            // If error or no profile found, go to profile creation
+            window.location.href = '/profile.html';
+          }
+        });
       },
       error: function (xhr) {
         alert(xhr.responseJSON?.message || 'Login failed.');
@@ -57,5 +79,6 @@ $(document).ready(function () {
   });
 });
 </script>
+
 </body>
 </html>

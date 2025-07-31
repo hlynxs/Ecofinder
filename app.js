@@ -4,9 +4,9 @@ const users = require('./routes/user');
 const itemRoutes = require('./routes/item');
 const dashboardRoutes = require('./routes/dashboard');
 const categoryRoutes = require('./routes/category');
-const orderRoutes = require('./routes/order');  // 👈 Add this line
+const orderRoutes = require('./routes/order');  
 const reviewRoutes = require('./routes/reviews');
-const authRoutes = require('./routes/auth'); // adjust path if needed
+const authRoutes = require('./routes/auth'); 
 
 
 require('dotenv').config();
@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 
 
-// ✅ Serve static folders
+//  Serve static folders
 app.use(express.static('public'));       
 app.use('/uploads', express.static('uploads')); 
 
@@ -37,5 +37,4 @@ app.use('/api/reviews', reviewRoutes);
 
 
 
-// Export app
 module.exports = app;
