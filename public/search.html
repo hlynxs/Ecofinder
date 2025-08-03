@@ -194,7 +194,7 @@
       loadCategories(selectedCategory);
       loadSearchResults(term, selectedCategory);
 
-      // ✅ Redirect to dashboard.html when category is clicked
+      //  Redirect to dashboard.html when category is clicked
       $(document).on('click', '.category-btn', function () {
         const categoryId = $(this).data('id');
         const url = `/dashboard.html${categoryId ? `?categoryId=${categoryId}` : ''}`;

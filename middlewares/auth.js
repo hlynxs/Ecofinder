@@ -4,7 +4,7 @@ const db = require("../config/database");
 exports.isAuthenticatedUser = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  const tabContext = req.headers['x-tab-context']; // New: Get tab context
+  const tabContext = req.headers['x-tab-context']; 
 
   if (!token) {
     return res.status(401).json({ 
@@ -23,7 +23,7 @@ exports.isAuthenticatedUser = (req, res, next) => {
       });
     }
 
-    // New: Basic tab context validation
+   
     if (tabContext) {
       if (decoded.role === 'admin' && tabContext !== 'admin') {
         return res.status(403).json({
@@ -45,14 +45,13 @@ exports.isAuthenticatedUser = (req, res, next) => {
   });
 };
 
-// Updated isAdmin middleware with caching
+
 exports.isAdmin = (req, res, next) => {
-  // First check if role is already in req.user (from token)
   if (req.user.role && req.user.role.toLowerCase() === 'admin') {
     return next();
   }
 
-  // Fallback to database check
+
   const userId = req.user.id;
   db.query(
     'SELECT role FROM users WHERE id = ?',
@@ -88,7 +87,7 @@ exports.isAdmin = (req, res, next) => {
   );
 };
 
-// Updated authorizeRoles with case insensitivity
+
 exports.authorizeRoles = (...roles) => {
   return (req, res, next) => {
     try {
@@ -120,13 +119,13 @@ exports.authorizeRoles = (...roles) => {
   };
 };
 
-// New middleware for tab context validation
+
 exports.validateTabContext = (requiredContext) => {
   return (req, res, next) => {
     const tabContext = req.headers['x-tab-context'];
     
     if (!tabContext) {
-      return next(); // Skip if no context provided
+      return next(); 
     }
 
     if (tabContext !== requiredContext) {

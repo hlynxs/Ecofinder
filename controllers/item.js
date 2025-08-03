@@ -72,7 +72,7 @@ const getItemsByCategory = (req, res) => {
 
   db.query(sql, [categoryId], (err, results) => {
     if (err) {
-      console.error('❌ SQL Error:', err.message);
+      console.error(' SQL Error:', err.message);
       return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 
@@ -270,7 +270,7 @@ const updateItem = (req, res) => {
 
 
 
-// Delete item
+
 // Soft delete item
 const softDeleteItem = (req, res) => {
   const itemId = req.params.id;
@@ -354,13 +354,13 @@ const searchItems = (req, res) => {
 
     const formatted = results.map(row => {
       const extra = row.extra_images ? row.extra_images.split(',') : [];
-      const all = [row.main_image, ...extra].filter(Boolean); // merge and remove empty
+      const all = [row.main_image, ...extra].filter(Boolean); 
 
       return {
         item_id: row.item_id,
         item_name: row.item_name,
         sell_price: row.sell_price,
-        stock: row.stock ?? 0, // handle null values safely
+        stock: row.stock ?? 0, 
         images: all
       };
     });
@@ -373,7 +373,7 @@ const searchItems = (req, res) => {
 const getItemsPaginated = (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const limit = parseInt(req.query.limit) || 10;
-  const sort = req.query.sort === 'asc' ? 'ASC' : 'DESC'; // default DESC
+  const sort = req.query.sort === 'asc' ? 'ASC' : 'DESC'; 
 
   const sql = `
     SELECT 

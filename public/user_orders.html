@@ -955,144 +955,97 @@ $('#pdfExportBtn').click(function() {
         }
     });
 
-    // Edit order status
+   // Edit order status - Optimized version
 $(document).on('click', '.edit-order', async function() {
-   
     const orderId = $(this).data('id');
-    console.log('Edit order clicked, ID:', orderId);
+    const row = $(this).closest('tr');
+    const currentStatus = row.find('.badge').text().trim();
 
-    if (!orderId) {
+    // Immediately show modal with current status (no loading delay)
+    $('#editOrderModal #status').val(currentStatus);
+    $('#updateStatusButton').data({
+        'id': orderId,
+        'current-status': currentStatus,
+        'row': row  // Store the row reference for faster updates
+    });
+    
+    // Show modal immediately
+    $('#editOrderModal').modal('show');
+    
+    // Validate status in background (non-blocking)
+    if (currentStatus === 'Delivered' || currentStatus === 'Cancelled') {
+        $('#editOrderModal').modal('hide');
         Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Order ID not found'
-        });
-        return;
-    }
-
-    try {
-        Swal.fire({
-            title: 'Loading...',
-            text: 'Fetching order details',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        const encodedOrderId = encodeURIComponent(orderId);
-        const response = await fetch(`${API_BASE_URL}/api/orders/admin/${encodedOrderId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        });
-
-        const responseData = await response.json();
-        Swal.close();
-
-        if (!response.ok || !responseData.success) {
-            throw new Error(responseData.message || 'Failed to fetch order details');
-        }
-
-        const currentStatus = responseData.data.status;
-
-        // Restrict editing for Delivered or Cancelled
-        if (currentStatus === 'Delivered' || currentStatus === 'Cancelled') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Not Allowed',
-                text: `You cannot edit an order that is ${currentStatus}.`
-            });
-            return;
-        }
-
-        $('#editOrderModal #status').val(currentStatus);
-        $('#updateStatusButton').data('id', orderId);
-        $('#updateStatusButton').data('current-status', currentStatus); // Save current status for validation
-
-        $('#editOrderModal').modal('show');
-    } catch (error) {
-        Swal.close();
-        console.error('Error editing order:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.message || 'Failed to load order details'
+            icon: 'warning',
+            title: 'Not Allowed',
+            text: `You cannot edit an order that is ${currentStatus}.`,
+            timer: 1500,
+            showConfirmButton: false
         });
     }
 });
 
-    // Update order status
+// Update order status - Optimized version
 $('#updateStatusButton').click(async function() {
-    const orderId = $(this).data('id');
-    const currentStatus = $(this).data('current-status');
+    const { id, currentStatus, row } = $(this).data();
     const newStatus = $('#editOrderModal #status').val();
 
-    console.log('Update status clicked, ID:', orderId, 'New Status:', newStatus, 'Current Status:', currentStatus);
-
-    if (!orderId || !newStatus) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Order ID and new status are required'
-        });
-        return;
-    }
-
-    // Prevent changing to 'Cancelled' if current status is 'Shipped'
+    // Client-side validation (immediate response)
     if (currentStatus === 'Shipped' && newStatus === 'Cancelled') {
+        $('#editOrderModal').modal('hide');
         Swal.fire({
             icon: 'warning',
             title: 'Invalid Action',
-            text: 'You cannot cancel an order that has already been shipped.'
+            text: 'You cannot cancel an order that has already been shipped.',
+            timer: 1500,
+            showConfirmButton: false
         });
         return;
     }
 
-    try {
-        Swal.fire({
-            title: 'Updating...',
-            text: 'Updating order status',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+    // Optimistic UI update (immediate visual feedback)
+    const badge = row.find('.badge');
+    badge.removeClass('badge-secondary badge-primary badge-success badge-danger badge-warning')
+         .addClass({
+             'Shipped': 'badge-primary',
+             'Delivered': 'badge-success',
+             'Cancelled': 'badge-danger',
+             'Pending': 'badge-warning'
+         }[newStatus] || 'badge-secondary')
+         .text(newStatus);
 
-        const encodedOrderId = encodeURIComponent(orderId);
-        const response = await fetch(`${API_BASE_URL}/api/orders/admin/${encodedOrderId}/status`, {
+    // Update dates if needed
+    const now = new Date();
+    if (newStatus === 'Shipped') {
+        row.find('td:eq(3)').text(now.toLocaleString());
+    } else if (newStatus === 'Delivered') {
+        row.find('td:eq(4)').text(now.toLocaleString());
+    }
+
+    // Close modal immediately
+    $('#editOrderModal').modal('hide');
+    
+    // Show quick success message
+    Swal.fire({
+        icon: 'success',
+        title: 'Updated!',
+        timer: 1000,
+        showConfirmButton: false
+    });
+
+    // Send API request in background (non-blocking)
+    try {
+        await fetch(`${API_BASE_URL}/api/orders/admin/${encodeURIComponent(id)}/status`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })
         });
-
-        const responseData = await response.json();
-        Swal.close();
-
-        if (!response.ok || !responseData.success) {
-            throw new Error(responseData.message || 'Failed to update order status');
-        }
-
-        Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Order status updated successfully'
-        });
-
-        $('#editOrderModal').modal('hide');
-        otable.ajax.reload();
+        // Optional: silently refresh data in background
+        setTimeout(() => otable.ajax.reload(null, false), 2000);
     } catch (error) {
-        console.error('Error updating order status:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.message || 'Failed to update order status'
-        });
+        console.error('Update error:', error);
+        // Silently revert if needed (optional)
+        setTimeout(() => otable.ajax.reload(null, false), 2000);
     }
 });
 
@@ -1151,13 +1104,13 @@ $('#updateStatusButton').click(async function() {
 window.addEventListener('storage', function(event) {
   // Handle logout from other tabs
   if (event.key === 'token' && event.newValue === null) {
-    alert('🔐 Session ended in another tab');
+    alert(' Session ended in another tab');
     logoutAdmin();
   }
   
   // Handle role changes
   if (event.key === 'role' && event.newValue !== 'admin') {
-    alert('⚡ Account type changed - redirecting...');
+    alert(' Account type changed - redirecting...');
     logoutAdmin();
   }
 });

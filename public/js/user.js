@@ -41,7 +41,7 @@ let hasMoreUsers = true;
       return;
     }
     
-    console.log('✅ Admin verified:', res.user);
+    console.log(' Admin verified:', res.user);
     loadUserManagement(); // Your existing function
     
   },
@@ -503,68 +503,68 @@ window.addEventListener('storage', function(event) {
 }
 
 async function addNewAdmin() {
-    const submitBtn = $('#userModal').find('button[type="submit"]');
-    const originalBtnText = submitBtn.html();
+    const $modal = $('#userModal');
+    const $form = $('#addUserForm');
     
     try {
-        // Disable button and show loading
-        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Creating...');
-        
-        // Get form values
-        const adminData = {
+        // Get form data
+        const formData = {
             name: $('#add_name').val().trim(),
             email: $('#add_email').val().trim().toLowerCase(),
             password: $('#add_password').val()
         };
 
-        // Basic frontend validation
-        if (!adminData.name) throw new Error('Full name is required');
-        if (!adminData.email) throw new Error('Email is required');
-        if (!adminData.password) throw new Error('Password is required');
-        if (adminData.password.length < 8) throw new Error('Password must be at least 8 characters');
-
         // Show processing
-        Swal.fire({
+        const swalInstance = Swal.fire({
             title: 'Creating Admin',
-            html: 'Please wait...',
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
 
-        // Make the API call
-        const response = await fetch(`${API_BASE}admin`, {
+        // Submit to backend
+        const response = await $.ajax({
+            url: `${API_BASE}admin`,
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(adminData)
+            data: JSON.stringify(formData)
         });
 
-        // Always assume success since data is being stored
-        $('#userModal').modal('hide');
-        $('#addUserForm')[0].reset();
+        // Close SweetAlert first
+        await swalInstance.close();
         
-        Swal.fire({
-            title: 'Success!',
-            text: 'Admin created successfully',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-        });
+        // Hide modal using Bootstrap's proper method
+        $modal.modal('hide');
+        
+        // Reset form
+        $form[0].reset();
+
+        // Only show success if new admin was created
+        if (response.message) {
+            await Swal.fire({
+                title: 'Success',
+                text: response.message,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
 
         // Refresh admin list
         loadAllUsers();
 
     } catch (error) {
-        console.error('Error:', error);
-        Swal.fire('Error', 'Admin creation completed (check list)', 'info');
-    } finally {
-        submitBtn.prop('disabled', false).html(originalBtnText);
+        Swal.fire('Error', 'Failed to process request', 'error');
     }
 }
 
-
+// Form submission - with proper event delegation
+$(document).on('submit', '#addUserForm', function(e) {
+    e.preventDefault();
+    addNewAdmin();
+});
     // ========== HELPER FUNCTIONS ========== //
 
     function getAuthHeaders() {

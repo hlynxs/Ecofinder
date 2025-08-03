@@ -18,11 +18,9 @@ const sendEmail = async ({ email, subject, message, attachPdf = false, pdfFilena
     html: message
   };
 
-  // If PDF attachment is requested
   if (attachPdf) {
     const options = { format: 'A4', border: '10mm' };
 
-    // Convert HTML to PDF Buffer
     await new Promise((resolve, reject) => {
       pdf.create(message, options).toBuffer((err, buffer) => {
         if (err) return reject(err);

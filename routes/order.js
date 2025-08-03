@@ -20,7 +20,7 @@ router.put('/admin/:orderId/status', updateOrderStatus);
 router.delete('/admin/:orderId', softDeleteOrder);
 router.get('/admin/archived', getArchivedOrders);
 router.get('/admin/:orderId', getOrderDetailsById);
-router.put('/admin/:orderId/restore', restoreOrder); // ✅ if you want restore
+router.put('/admin/:orderId/restore', restoreOrder); 
 
 
 

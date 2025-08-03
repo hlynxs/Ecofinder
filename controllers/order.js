@@ -431,8 +431,8 @@ WHERE orderinfo_id = ? AND deleted_at IS NULL
       o.orderinfo_id,
       CONCAT(c.fname, ' ', c.lname) AS customer_name,
       o.date_placed,
-      o.date_shipped,          -- ✅ add this
-      o.date_delivered,        -- ✅ add this
+      o.date_shipped,          --  add this
+      o.date_delivered,        --  add this
       o.status,
       s.region,
       s.rate
@@ -569,7 +569,7 @@ WHERE orderinfo_id = ? AND deleted_at IS NULL
         return res.status(500).json({ success: false, message: 'Failed to fetch archived orders' });
       }
   
-      // ✅ Always return a success response, even if empty
+      //  Always return a success response, even if empty
       res.json({ success: true, data: results });
     });
   };

@@ -1,7 +1,7 @@
 const connection = require('../config/database');
 
 exports.getAllCategories = (req, res) => {
-  const showDeleted = req.query.showDeleted === 'true'; // e.g. ?showDeleted=true
+  const showDeleted = req.query.showDeleted === 'true'; 
   const sql = showDeleted
     ? `SELECT * FROM category ORDER BY description ASC`
     : `SELECT category_id, description FROM category WHERE deleted_at IS NULL ORDER BY description ASC`;
@@ -184,7 +184,7 @@ exports.updateCategory = (req, res) => {
 exports.deleteCategory = (req, res) => {
     const categoryId = req.params.id;
 
-    // First check if category is being used by any items
+   
     const checkSql = 'SELECT COUNT(*) as count FROM item WHERE category_id = ? AND deleted_at IS NULL';
     
     try {
@@ -213,7 +213,7 @@ exports.deleteCategory = (req, res) => {
                     softDeleteCategory();
                 });
             } else {
-                // No items to soft delete, just soft delete the category
+              
                 softDeleteCategory();
             }
 
@@ -295,12 +295,12 @@ exports.restoreCategory = (req, res) => {
   }
 };
 
-// GET /api/categories/paginated?limit=10&offset=0&showDeleted=true
+
 exports.getCategoriesPaginated = (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const offset = parseInt(req.query.offset) || 0;
   const sortParam = req.query.sort;
-  // Default to descending by category_id if no valid sort param provided
+
   const sort = sortParam === 'asc' ? 'ASC' : 'DESC';
 
   const dataSql = `

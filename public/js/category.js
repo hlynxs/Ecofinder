@@ -12,11 +12,11 @@ $(document).ready(function () {
         'X-Tab-Context': 'admin'
       },
       success: function(res) {
-        console.log('✅ Admin verified:', res.user);
+        console.log(' Admin verified:', res.user);
         
         // TAB CONTEXT VERIFICATION
         if (sessionStorage.getItem('tabRole') !== 'admin') {
-          alert('⚠️ Security Alert: Please access categories through admin interface');
+          alert(' Security Alert: Please access categories through admin interface');
           logoutAdmin();
           return;
         }
@@ -26,10 +26,10 @@ $(document).ready(function () {
         const message = xhr.responseJSON?.message || defaultMsg;
         
         if (xhr.status === 403 && message.includes('interface')) {
-          alert('🔒 Admin account detected - redirecting to admin portal');
+          alert(' Admin account detected - redirecting to admin portal');
           window.location.href = '/home_admin.html';
         } else if (xhr.status === 401) {
-          alert('⌛ Session expired - please login again');
+          alert(' Session expired - please login again');
           logoutAdmin();
         } else {
           alert(message);
@@ -342,13 +342,13 @@ $(document).ready(function () {
   window.addEventListener('storage', function(event) {
     // Handle logout from other tabs
     if (event.key === 'token' && event.newValue === null) {
-      alert('🔐 Session ended in another tab');
+      alert(' Session ended in another tab');
       logoutAdmin();
     }
     
     // Handle role changes
     if (event.key === 'role' && event.newValue !== 'admin') {
-      alert('⚡ Account type changed - redirecting...');
+      alert(' Account type changed - redirecting...');
       logoutAdmin();
     }
   });

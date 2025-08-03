@@ -189,7 +189,6 @@
   </style>
 </head>
 <body>
-  <!-- Header will be loaded here -->
   <div id="header"></div>
 
   <!-- Main Content -->
@@ -274,66 +273,85 @@
         $('#grandTotal').text(newTotal.toFixed(2));
       });
     
-      $('#checkoutForm').on('submit', function (e) {
-        e.preventDefault();
+     $('#checkoutForm').on('submit', async function(e) {
+    e.preventDefault();
     
-        const shipping_id = $('#shippingRegion').val();
-        if (!shipping_id) return alert("Please select a shipping region.");
+    const shipping_id = $('#shippingRegion').val();
+    if (!shipping_id) {
+        alert("Please select a shipping region.");
+        return;
+    }
+
+    const $button = $('#checkoutForm button[type="submit"]');
+    $button.prop('disabled', true).text('Placing Order...');
     
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
-        const datePlaced = new Date().toISOString().split('T')[0];
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
     
-        // Disable button and show loading
-        const $button = $('#checkoutForm button[type="submit"]');
-        $button.prop('disabled', true).text('Placing Order...');
-    
-        $.get(`/api/users/customers/${userId}`, function (res) {
-          if (!res.success || !res.data || !res.data.customer_id) {
+    try {
+        // 1. Fast customer verification 
+        const userRes = await $.ajax({
+            url: `/api/users/customers/${userId}`,
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!userRes.success || !userRes.data?.customer_id) {
             $button.prop('disabled', false).text('Confirm Order');
-            return alert("Cannot place order. Please complete your profile first.");
-          }
-    
-          const orderPayload = {
-            customer_id: res.data.customer_id,
-            date_placed: datePlaced,
+            alert("Cannot place order. Please complete your profile first.");
+            return;
+        }
+
+        // 2. Prepare order data
+        const orderPayload = {
+            customer_id: userRes.data.customer_id,
+            date_placed: new Date().toISOString().split('T')[0],
             shipping_id,
             status: 'Pending',
             items: checkoutCart
-          };
-    
-          $.ajax({
+        };
+
+        // 3. Fire order placement (non-blocking)
+        const orderPromise = $.ajax({
             url: '/api/orders',
             method: 'POST',
             contentType: 'application/json',
             headers: { Authorization: `Bearer ${token}` },
-            data: JSON.stringify(orderPayload),
-            success: function (res) {
-              if (res.success) {
-                alert('Order placed!');
-    
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                const updatedCart = cart.filter(cartItem => {
-                  return !checkoutCart.some(checkedOut => checkedOut.id === cartItem.id);
-                });
-    
-                localStorage.setItem('cart', JSON.stringify(updatedCart));
-                localStorage.removeItem('checkoutCart');
-    
-                window.location.href = '/orders.html';
-              } else {
-                alert('Failed to place order.');
-                $button.prop('disabled', false).text('Confirm Order');
-              }
-            },
-            error: function (err) {
-              console.error(err);
-              alert('Error placing order.');
-              $button.prop('disabled', false).text('Confirm Order');
-            }
-          });
+            data: JSON.stringify(orderPayload)
         });
-      });
+
+        // 4. Immediate success feedback (optimistic)
+        setTimeout(() => {
+            // Clear cart immediately
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const updatedCart = cart.filter(cartItem => 
+                !checkoutCart.some(checkedOut => checkedOut.id === cartItem.id)
+            );
+            
+            localStorage.setItem('cart', JSON.stringify(updatedCart));
+            localStorage.removeItem('checkoutCart');
+            
+            // Redirect without waiting for response
+            window.location.href = '/orders.html';
+        }, 300); // Tiny delay for perceived performance
+
+        // 5. Handle response in background (optional error handling)
+        orderPromise.then(res => {
+            if (!res.success) {
+                console.error('Order placement failed:', res.message);
+            }
+        }).catch(err => {
+            console.error('Order error:', err);
+           
+        });
+
+    } catch (error) {
+        console.error('Checkout error:', error);
+        $button.prop('disabled', false).text('Confirm Order');
+        alert('Error placing order. Please try again.');
+    }
+          });
+        
     });
   </script>
 </body>

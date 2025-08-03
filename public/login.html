@@ -62,12 +62,10 @@ $(document).ready(function () {
             if (profileResponse && Object.keys(profileResponse).length > 0) {
               window.location.href = '/dashboard.html';
             } else {
-              // Otherwise go to profile creation
               window.location.href = '/profile.html';
             }
           },
           error: function () {
-            // If error or no profile found, go to profile creation
             window.location.href = '/profile.html';
           }
         });

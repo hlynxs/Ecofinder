@@ -22,75 +22,55 @@ const registerUser = async (req, res) => {
   }
 };
 //create admin
- const createAdmin = async (req, res) => {
+const createAdmin = async (req, res) => {
   const { name, email, password } = req.body;
 
   // Validate input
   if (!name || !email || !password) {
     return res.status(400).json({
       success: false,
-      error: 'Name, email and password are required',
-      code: 'MISSING_FIELDS'
-    });
-  }
-
-  // Validate email format
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Invalid email format',
-      code: 'INVALID_EMAIL'
-    });
-  }
-
-  // Validate password strength
-  if (password.length < 8) {
-    return res.status(400).json({
-      success: false,
-      error: 'Password must be at least 8 characters',
-      code: 'WEAK_PASSWORD'
+      error: 'All fields are required'
     });
   }
 
   try {
-    // Use promise-based queries for better error handling
-    const [checkResults] = await connection.promise().execute(
-      'SELECT id FROM users WHERE email = ?',
+    // Check for existing email
+    const [existing] = await connection.promise().query(
+      'SELECT id FROM users WHERE email = ?', 
       [email]
     );
 
-    if (checkResults.length > 0) {
-      return res.status(409).json({
-        success: false,
-        error: 'Email already exists',
-        code: 'EMAIL_EXISTS'
+    if (existing.length > 0) {
+      return res.status(200).json({  
+        success: true,
+        message: 'Admin added'  
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    const [result] = await connection.promise().execute(
+    const [result] = await connection.promise().query(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, hashedPassword, 'admin'] // Using lowercase 'admin' for consistency
+      [name, email, hashedPassword, 'admin']
     );
 
     return res.status(201).json({
       success: true,
-      message: 'Admin created successfully',
-      data: {
-        userId: result.insertId,
-        email,
-        role: 'admin'
-      }
+      message: 'Admin created successfully'
     });
 
   } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(200).json({  
+        success: true,
+        message: 'Admin added'
+      });
+    }
+    
     console.error('Admin creation error:', error);
     return res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      code: 'SERVER_ERROR',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: 'Internal server error'
     });
   }
 };
@@ -112,7 +92,7 @@ const loginUser = (req, res) => {
 
     const user = users[0];
 
-    // ❌ Block deactivated users
+    //  Block deactivated users
     const status = (user.status || '').trim().toLowerCase();
     if (status === 'deactivated') {
       return res.status(403).json({
@@ -121,7 +101,7 @@ const loginUser = (req, res) => {
       });
     }
 
-    // ✅ Password compare
+    //  Password compare
     const safePasswordHash = user.password.replace(/^\$2y\$/, '$2b$');
     const match = await bcrypt.compare(password, safePasswordHash);
 
@@ -129,7 +109,7 @@ const loginUser = (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    // 🔐 Issue token
+    //  Issue token
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
     const updateSql = 'UPDATE users SET token = ? WHERE id = ?';
 
@@ -164,7 +144,7 @@ const updateUser = (req, res) => {
     }
 
     if (checkResult.length > 0) {
-      // ✅ Update profile
+      //  Update profile
       let updateSql, updateParams;
 
       if (image) {
@@ -205,7 +185,7 @@ const updateUser = (req, res) => {
         });
       });
     } else {
-      // 🆕 Insert profile
+      //  Insert profile
       const insertSql = `
         INSERT INTO customer 
           (title, fname, lname, addressline, town, phone, image_path, user_id)

@@ -203,6 +203,24 @@
       color: var(--primary-color);
       font-weight: 500;
     }
+
+    /* Add to your existing styles */
+.order-items .text-end {
+  min-width: 150px;
+}
+
+@media (max-width: 768px) {
+  .order-items .d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .order-items .text-end {
+    margin-top: 10px;
+    width: 100%;
+    text-align: left !important;
+  }
+}
     
   </style>
 </head>
@@ -381,7 +399,14 @@ $.get(`/api/orders/customer/${customerId}`, function (res) {
   $('.purchase-count').text(`${purchaseCount} ${purchaseCount === 1 ? 'PURCHASE' : 'PURCHASES'}`);
 
   let html = '';
-  displayOrders.forEach((order) => {
+  // In the order display section where you build the HTML, add the total cost calculation:
+displayOrders.forEach((order) => {
+    // Calculate order total (items + shipping)
+    const itemsTotal = Array.isArray(order.items) ? 
+        order.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) : 0;
+    const shippingCost = parseFloat(order.rate) || 0;
+    const orderTotal = itemsTotal + shippingCost;
+
     html += `
       <div class="order-card">
         <div class="order-header">
@@ -397,50 +422,56 @@ $.get(`/api/orders/customer/${customerId}`, function (res) {
               })}</span>
             </div>
 
-                    <div class="d-flex align-items-center gap-3">
-                      <span class="text-muted">ID: ${order.orderinfo_id}</span>
-                      <span class="order-status ${order.status.replace(/\s/g, '')}">${order.status}</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="order-items">
-                  <div class="mb-2"><strong>Shipping to:</strong> ${order.region} - ₱${parseFloat(order.rate).toFixed(2)}</div>
-                  <h6 class="mb-3">Items Ordered</h6>
-                  <ul class="list-group">`;
+            <div class="d-flex align-items-center gap-3">
+              <span class="text-muted">ID: ${order.orderinfo_id}</span>
+              <span class="order-status ${order.status.replace(/\s/g, '')}">${order.status}</span>
+            </div>
+          </div>
+        </div>
+        <div class="order-items">
+          <div class="mb-2"><strong>Shipping to:</strong> ${order.region} - ₱${shippingCost.toFixed(2)}</div>
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Items Ordered</h6>
+            <div class="text-end">
+              <small class="text-muted">Items: ₱${itemsTotal.toFixed(2)}</small><br>
+              <strong>Order Total: ₱${orderTotal.toFixed(2)}</strong>
+            </div>
+          </div>
+          <ul class="list-group">`;
 
-            if (Array.isArray(order.items)) {
-              order.items.forEach(item => {
-                if (!item.item_id) return;
+    if (Array.isArray(order.items)) {
+      order.items.forEach(item => {
+        if (!item.item_id) return;
 
-                const hasReviewed = existingReviews.some(r =>
-                  r.item_id === item.item_id && r.orderinfo_id === order.orderinfo_id
-                );
+        const hasReviewed = existingReviews.some(r =>
+          r.item_id === item.item_id && r.orderinfo_id === order.orderinfo_id
+        );
 
-                html += `
-                  <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <div class="fw-medium">${item.item_name}</div>
-                        <div class="text-muted">Quantity: ${item.quantity}</div>
-                        ${order.status === 'Delivered' ?
-                          `<button 
-                            class="btn btn-sm mt-2 ${hasReviewed ? 'btn-outline-secondary' : 'btn-outline-primary'}"
-                            ${hasReviewed ? 'disabled' : `onclick="leaveReview(${order.orderinfo_id}, ${customerId}, ${item.item_id})"`}
-                          >
-                            <i class="fas fa-${hasReviewed ? 'check' : 'pen'} me-1"></i>
-                            ${hasReviewed ? 'Reviewed' : 'Leave Review'}
-                          </button>` : ''}  
-                      </div>
-                      <div class="fw-bold">₱${(item.quantity * item.price).toFixed(2)}</div>
-                    </div>
-                  </li>`;
-              });
-            } else {
-              html += `<li class="list-group-item text-danger">No items found for this order</li>`;
-            }
+        html += `
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-medium">${item.item_name}</div>
+                <div class="text-muted">Quantity: ${item.quantity}</div>
+                ${order.status === 'Delivered' ?
+                  `<button 
+                    class="btn btn-sm mt-2 ${hasReviewed ? 'btn-outline-secondary' : 'btn-outline-primary'}"
+                    ${hasReviewed ? 'disabled' : `onclick="leaveReview(${order.orderinfo_id}, ${customerId}, ${item.item_id})"`}
+                  >
+                    <i class="fas fa-${hasReviewed ? 'check' : 'pen'} me-1"></i>
+                    ${hasReviewed ? 'Reviewed' : 'Leave Review'}
+                  </button>` : ''}  
+              </div>
+              <div class="fw-bold">₱${(item.quantity * item.price).toFixed(2)}</div>
+            </div>
+          </li>`;
+      });
+    } else {
+      html += `<li class="list-group-item text-danger">No items found for this order</li>`;
+    }
 
-            html += `</ul></div></div>`;
-          });
+    html += `</ul></div></div>`;
+});
 
           $('#ordersList').html(html);
         });

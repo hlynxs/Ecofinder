@@ -14,14 +14,13 @@ router.get('/search/:term', itemController.searchItems);
 // ADMIN ROUTES
 router.get('/admin', itemController.getAllItemsIncludingDeleted);
 
-// Specific routes FIRST
+// Specific routes 
 router.get('/admin/infinite', itemController.getItemsPaginated);
 
-// General route LAST
+// General route 
 router.get('/admin/:id', itemController.getSingleItem);
 
 
-// CREATE (single image)
 // item.js (routes)
 router.post('/admin', upload.array('images', 5), itemController.createItem);
 
