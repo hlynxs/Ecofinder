@@ -7,6 +7,7 @@ const categoryRoutes = require('./routes/category');
 const orderRoutes = require('./routes/order');  
 const reviewRoutes = require('./routes/reviews');
 const authRoutes = require('./routes/auth'); 
+const { isEcoFriendly } = require('./utils/nlp'); // adjust path if needed
 
 
 require('dotenv').config();

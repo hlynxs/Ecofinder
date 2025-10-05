@@ -5,12 +5,14 @@ const db = require('../config/database');
 // --------------------
 
 // Get all items for public view
+
 const getAllItems = (req, res) => {
   const sql = `
     SELECT 
       i.item_id, 
       i.item_name, 
       i.sell_price, 
+      i.is_eco_friendly,
       i.image AS main_image,
       GROUP_CONCAT(ii.image_path) AS extra_images,
       s.quantity AS stock
@@ -26,25 +28,27 @@ const getAllItems = (req, res) => {
 
   db.query(sql, (err, results) => {
     if (err) {
-      console.error(' SQL Error:', err.message);
+      console.error('SQL Error:', err.message);
       return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 
     const formatted = results.map(row => {
       const extra = row.extra_images ? row.extra_images.split(',') : [];
-      const all = [row.main_image, ...extra].filter(Boolean);
+      const allImages = [row.main_image, ...extra].filter(Boolean);
       return {
         item_id: row.item_id,
         item_name: row.item_name,
         sell_price: row.sell_price,
-        images: all,
-        stock: row.stock || 0
+        images: allImages,
+        stock: row.stock || 0,
+        is_eco_friendly: row.is_eco_friendly === 1 // convert TINYINT to boolean
       };
     });
 
     res.json({ status: 'success', data: formatted });
   });
 };
+
 
 
 // Get items by category (public)
@@ -174,20 +178,25 @@ const getSingleItem = (req, res) => {
 
 
 // Create item
-const createItem = (req, res) => {
+const { isEcoFriendly } = require('../utils/nlp');
+
+const createItem = async (req, res) => {
   const { item_name, description, cost_price, sell_price, quantity, category_id } = req.body;
   const imageFiles = req.files || [];
   const mainImage = imageFiles.length > 0 ? imageFiles[0].filename : null;
-  
+
   if (!item_name || !description || !cost_price || !sell_price || !quantity || !category_id) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
+  // ✅ Await the AI NLP check
+  const ecoFlag = await isEcoFriendly(description);
+
   const itemSql = `
-    INSERT INTO item (item_name, description, cost_price, sell_price, image, category_id)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO item (item_name, description, cost_price, sell_price, image, category_id, is_eco_friendly)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
-  const itemValues = [item_name, description, cost_price, sell_price, mainImage, category_id];
+  const itemValues = [item_name, description, cost_price, sell_price, mainImage, category_id, ecoFlag];
 
   db.execute(itemSql, itemValues, (err, result) => {
     if (err) return res.status(500).json({ error: 'Error inserting item', details: err });
@@ -198,47 +207,49 @@ const createItem = (req, res) => {
     db.execute(stockSql, [itemId, quantity], (err2) => {
       if (err2) return res.status(500).json({ error: 'Error inserting stock', details: err2 });
 
-      // Only insert into item_images if file is provided
       if (imageFiles.length > 0) {
         const imgSql = `INSERT INTO item_images (item_id, image_path) VALUES ?`;
         const imgValues = imageFiles.map(file => [itemId, file.filename]);
-        db.query(imgSql, [imgValues], (err3) => {      
+        db.query(imgSql, [imgValues], (err3) => {
           if (err3) return res.status(500).json({ error: 'Error saving image path', details: err3 });
-          return res.status(201).json({ success: true, message: 'Item created with image', itemId });
+          return res.status(201).json({ success: true, message: 'Item created with image', itemId, eco_friendly: ecoFlag });
         });
       } else {
-        return res.status(201).json({ success: true, message: 'Item created', itemId });
+        return res.status(201).json({ success: true, message: 'Item created', itemId, eco_friendly: ecoFlag });
       }
     });
   });
 };
 
 
+
 // Update item
-const updateItem = (req, res) => {
+const updateItem = async (req, res) => {
   const itemId = req.params.id;
   const { item_name, description, cost_price, sell_price, quantity, category_id } = req.body;
   const imageFiles = req.files || [];
 
   const mainImage = imageFiles.length > 0 ? imageFiles[0].filename : null;
 
-  // Include image in update only if a new one is uploaded
+  // ✅ Await the AI NLP check
+  const ecoFlag = await isEcoFriendly(description);
+
   let itemSql, itemValues;
 
   if (mainImage) {
     itemSql = `
       UPDATE item
-      SET item_name = ?, description = ?, cost_price = ?, sell_price = ?, category_id = ?, image = ?
+      SET item_name = ?, description = ?, cost_price = ?, sell_price = ?, category_id = ?, image = ?, is_eco_friendly = ?
       WHERE item_id = ?
     `;
-    itemValues = [item_name, description, cost_price, sell_price, category_id, mainImage, itemId];
+    itemValues = [item_name, description, cost_price, sell_price, category_id, mainImage, ecoFlag, itemId];
   } else {
     itemSql = `
       UPDATE item
-      SET item_name = ?, description = ?, cost_price = ?, sell_price = ?, category_id = ?
+      SET item_name = ?, description = ?, cost_price = ?, sell_price = ?, category_id = ?, is_eco_friendly = ?
       WHERE item_id = ?
     `;
-    itemValues = [item_name, description, cost_price, sell_price, category_id, itemId];
+    itemValues = [item_name, description, cost_price, sell_price, category_id, ecoFlag, itemId];
   }
 
   db.execute(itemSql, itemValues, (err) => {
@@ -249,7 +260,6 @@ const updateItem = (req, res) => {
       if (err2) return res.status(500).json({ error: 'Error updating stock', details: err2 });
 
       if (imageFiles.length > 0) {
-        // Delete old extra images (item_images)
         const deleteSql = `DELETE FROM item_images WHERE item_id = ?`;
         db.query(deleteSql, [itemId], (delErr) => {
           if (delErr) return res.status(500).json({ error: 'Error deleting old images', details: delErr });
@@ -258,15 +268,17 @@ const updateItem = (req, res) => {
           const imgValues = imageFiles.map(file => [itemId, file.filename]);
           db.query(imgSql, [imgValues], (err3) => {
             if (err3) return res.status(500).json({ error: 'Error saving images', details: err3 });
-            return res.status(200).json({ success: true, message: 'Item updated with new images' });
+            return res.status(200).json({ success: true, message: 'Item updated with new images', eco_friendly: ecoFlag });
           });
         });
       } else {
-        return res.status(200).json({ success: true, message: 'Item updated' });
+        return res.status(200).json({ success: true, message: 'Item updated', eco_friendly: ecoFlag });
       }
     });
   });
 };
+
+
 
 
 

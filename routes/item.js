@@ -32,7 +32,13 @@ router.delete('/admin/:id', itemController.deleteItem);
 router.patch('/admin/restore/:id', itemController.restoreItem);
 router.get('/admin/all', itemController.getAllItemsIncludingDeleted);
 
+
+
+
+
 router.get('/:id', itemController.getSingleItem); 
+
+
 
 
 

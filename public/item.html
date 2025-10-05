@@ -435,6 +435,10 @@
       transform: scale(1.1);
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
+
+    .eco-friendly-row {
+    background-color: #e6f7e6; /* light green */
+}
   </style>
 
   <!-- jQuery (must come first) -->
@@ -520,6 +524,7 @@
                 <th>Item Name</th>
                 <th>Image</th>
                 <th>Description</th>
+                <th>Product Type</th>
                 <th>Cost Price</th>
                 <th>Sell Price</th>
                 <th>Quantity</th>
@@ -696,74 +701,92 @@
         }
       ],
       columns: [
-        { data: 'item_id' },
-        { data: 'item_name' },
-        {
-          data: 'all_images',
-          render: function(images) {
-            if (!images || images.length === 0) return 'No Image';
-            const unique = [...new Set(images)];
-            return unique.map(img => 
-              `<img src="${IMAGE_BASE_URL}${img}" class="item-img" alt="Item Image">`
-            ).join('');
-          }
-        },
-        { data: 'description' },
-        { 
-          data: 'cost_price',
-          render: function(data) {
-            return data ? `₱${parseFloat(data).toFixed(2)}` : 'N/A';
-          }
-        },
-        { 
-          data: 'sell_price',
-          render: function(data) {
-            return data ? `₱${parseFloat(data).toFixed(2)}` : 'N/A';
-          }
-        },
-        { data: 'quantity' },
-        { data: 'category_name' },
-        {
-          data: 'deleted_at',
-          render: function(data) {
-            if (data) {
-              return '<span class="badge badge-danger">Archived</span>';
-            } else {
-              return '<span class="badge badge-success">Active</span>';
-            }
-          }
-        },
-        {
-          data: null,
-          render: function(data) {
-            if (data.deleted_at) {
-              return `
-                <div class="btn-group" role="group">
-                  <button class="btn btn-sm btn-success restore-btn" data-id="${data.item_id}" title="Restore">
-                    <i class="fas fa-undo"></i> Restore
-                  </button>
-                </div>
-              `;
-            } else {
-              return `
-                <div class="btn-group" role="group">
-                  <button class="btn btn-sm btn-primary edit-btn" data-id="${data.item_id}" title="Edit">
-                    <i class="fas fa-edit"></i> Edit
-                  </button>
-                  <button class="btn btn-sm btn-danger delete-btn" data-id="${data.item_id}" title="Delete">
-                    <i class="fas fa-trash"></i> Delete
-                  </button>
-                </div>
-              `;
-            }
-          },
-          orderable: false
+    { data: 'item_id' },
+    { data: 'item_name' },
+    {
+      data: 'all_images',
+      render: function(images) {
+        if (!images || images.length === 0) return 'No Image';
+        const unique = [...new Set(images)];
+        return unique.map(img => 
+          `<img src="${IMAGE_BASE_URL}${img}" class="item-img" alt="Item Image">`
+        ).join('');
+      }
+    },
+    { data: 'description' },
+    {
+      data: 'is_eco_friendly',   // ✅ Product Type column
+      render: function(data) {
+        return data
+          ? '<span class="badge badge-success">Eco-Friendly</span>'
+          : '<span class="badge badge-secondary">Regular</span>';
+      }
+    },
+    { 
+      data: 'cost_price',
+      render: function(data) {
+        return data ? `₱${parseFloat(data).toFixed(2)}` : 'N/A';
+      }
+    },
+    { 
+      data: 'sell_price',
+      render: function(data) {
+        return data ? `₱${parseFloat(data).toFixed(2)}` : 'N/A';
+      }
+    },
+    { data: 'quantity' },
+    { data: 'category_name' },
+    {
+      data: 'deleted_at',
+      render: function(data) {
+        if (data) {
+          return '<span class="badge badge-danger">Archived</span>';
+        } else {
+          return '<span class="badge badge-success">Active</span>';
+        }
+      }
+    },
+    {
+      data: null,
+      render: function(data) {
+        if (data.deleted_at) {
+          return `
+            <div class="btn-group" role="group">
+              <button class="btn btn-sm btn-success restore-btn" data-id="${data.item_id}" title="Restore">
+                <i class="fas fa-undo"></i> Restore
+              </button>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="btn-group" role="group">
+              <button class="btn btn-sm btn-primary edit-btn" data-id="${data.item_id}" title="Edit">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-danger delete-btn" data-id="${data.item_id}" title="Delete">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          `;
+        }
+      },
+      orderable: false
         }
       ],
-      initComplete: function() {
-        console.log('DataTable initialized');
-        loadCategories();
-      }
+      rowCallback: function(row, data) {
+    if (data.is_eco_friendly) {
+      $(row).addClass('eco-friendly-row');
+    } else {
+      $(row).removeClass('eco-friendly-row');
+    }
+  },
+
+  initComplete: function() {
+    console.log('DataTable initialized');
+    loadCategories();
+  }
+
+      
     });
 
     // Add PDF button click handler

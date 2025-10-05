@@ -116,13 +116,13 @@
     }
     
     .product-card .card-title {
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin-bottom: 0.75rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  white-space: normal; 
+  overflow: visible;  
+  text-overflow: unset;
+}
     
     .product-card .price {
       color: var(--primary);
@@ -477,56 +477,62 @@
           $('#emptyState').show();
         } else {
           items.forEach(item => {
-            let images = parseImages(item.images);
-            images = [...new Set(images)];
+  let images = parseImages(item.images);
+  images = [...new Set(images)];
 
-            const uniqueCarouselId = `carousel-${item.item_id}`;
-            let imageHtml = '';
+  const uniqueCarouselId = `carousel-${item.item_id}`;
+  let imageHtml = '';
 
-            if (images.length === 1) {
-              imageHtml = `<img src="/uploads/${images[0]}" class="card-img-top img-fluid" onerror="this.style.display='none';">`;
-            } else if (images.length > 1) {
-              imageHtml = `
-                <div id="${uniqueCarouselId}" class="carousel slide" data-bs-ride="carousel">
-                  <div class="carousel-inner">
-                    ${images.map((img, idx) => `
-                      <div class="carousel-item ${idx === 0 ? 'active' : ''}">
-                        <img src="/uploads/${img}" class="d-block w-100" onerror="this.style.display='none';">
-                      </div>
-                    `).join('')}
-                  </div>
-                  <button class="carousel-control-prev" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                  </button>
-                  <button class="carousel-control-next" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                  </button>
-                </div>`;
-            }
+  if (images.length === 1) {
+    imageHtml = `<img src="/uploads/${images[0]}" class="card-img-top img-fluid" onerror="this.style.display='none';">`;
+  } else if (images.length > 1) {
+    imageHtml = `
+      <div id="${uniqueCarouselId}" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          ${images.map((img, idx) => `
+            <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+              <img src="/uploads/${img}" class="d-block w-100" onerror="this.style.display='none';">
+            </div>
+          `).join('')}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
+      </div>`;
+  }
 
-            html += `
-              <div class="col-lg-3 col-md-4 col-sm-6 product-container">
-                <div class="card product-card h-100">
-                  ${imageHtml}
-                  <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">${item.item_name}</h5>
-                    <div class="price mb-2">₱${parseFloat(item.sell_price).toFixed(2)}</div>
-                   <div class="stock mb-3 ${item.stock > 0 ? 'text-success' : 'text-danger'}">
-                     ${item.stock} available
-                    </div>
-                    <div class="mt-auto">
-                      <button class="btn btn-primary add-to-cart-btn ${item.stock <= 0 ? 'disabled' : ''}"
-                        data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
-                        <i class="fas fa-cart-plus me-1"></i> Add to Cart
-                      </button>
-                      <button class="btn btn-outline-secondary mt-2 see-details-btn" data-id="${item.item_id}">
-                        <i class="fas fa-eye me-1"></i> View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>`;
-          });
+  // Add Eco-Friendly badge
+const ecoBadge = item.is_eco_friendly == true || item.is_eco_friendly == 1
+    ? '<span class="badge bg-success me-1"><i class="fas fa-leaf me-1"></i>Eco-Friendly</span>'
+    : '<span class="badge bg-secondary me-1"><i class="fas fa-times me-1"></i>Not Eco-Friendly</span>';
+
+  html += `
+    <div class="col-lg-3 col-md-4 col-sm-6 product-container">
+      <div class="card product-card h-100">
+        ${imageHtml}
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">${item.item_name} ${ecoBadge}</h5>
+          <div class="price mb-2">₱${parseFloat(item.sell_price).toFixed(2)}</div>
+          <div class="stock mb-3 ${item.stock > 0 ? 'text-success' : 'text-danger'}">
+            ${item.stock} available
+          </div>
+          <div class="mt-auto">
+            <button class="btn btn-primary add-to-cart-btn ${item.stock <= 0 ? 'disabled' : ''}"
+              data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
+              <i class="fas fa-cart-plus me-1"></i> Add to Cart
+            </button>
+            <button class="btn btn-outline-secondary mt-2 see-details-btn" data-id="${item.item_id}">
+              <i class="fas fa-eye me-1"></i> View Details
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+});
+
         }
         
         $('#productGrid').html(html).fadeIn();
@@ -677,106 +683,121 @@
 
     let currentModalItem = null;
     
-    $(document).on('click', '.see-details-btn', function () {
-      const itemId = $(this).data('id');
-      
-      const card = $(this).closest('.product-card');
-      currentModalItem = {
-          id: itemId,
-          name: card.find('.card-title').text(),
-          price: parseFloat(card.find('.price').first().text().replace('₱', '')),
-          image_path: card.find('img').first().attr('src')?.replace('/uploads/', '') || 'default.jpg',
-          stock: card.find('.stock').text().includes('In Stock') ? 1 : 0
-      };
+   $(document).on('click', '.see-details-btn', function () {
+    const itemId = $(this).data('id');
+    
+    const card = $(this).closest('.product-card');
+    currentModalItem = {
+        id: itemId,
+        name: card.find('.card-title').text(),
+        price: parseFloat(card.find('.price').first().text().replace('₱', '')),
+        image_path: card.find('img').first().attr('src')?.replace('/uploads/', '') || 'default.jpg',
+        stock: card.find('.stock').text().includes('In Stock') ? 1 : 0
+    };
 
-      $.get(`/api/item/${itemId}`, function (res) {
-          if (res.success && res.result && res.result.length > 0) {
-              const item = res.result[0];
-              
-              $('#modalItemName').text(item.item_name || 'No name available');
-              $('#modalItemPrice').text(parseFloat(item.sell_price || 0).toFixed(2));
-              $('#modalItemStock').text(`${item.quantity} available`);
-              $('#modalItemStock').removeClass('bg-success bg-danger')
-            .addClass(item.quantity > 0 ? 'bg-success' : 'bg-danger');
-              
-              $('#modalItemDescription').text(item.description || 'No description available.');
+    $.get(`/api/item/${itemId}`, function (res) {
+        if (res.success && res.result && res.result.length > 0) {
+            const item = res.result[0];
+            
+            // Product Name + Eco Badge
+            let ecoBadgeHtml = '';
+            let ecoDescription = '';
+            if (item.is_eco_friendly) {
+                ecoBadgeHtml = `<span class="badge bg-success ms-2">Eco-Friendly</span>`;
+                ecoDescription = "This product is designed with the environment in mind. It uses sustainable materials, reduces waste, and minimizes its carbon footprint.";
+            } else {
+                ecoBadgeHtml = `<span class="badge bg-secondary ms-2">Not Eco-Friendly</span>`;
+                ecoDescription = "This product does not have eco-friendly certification. Consider greener alternatives when possible.";
+            }
 
-              const allImages = item.all_images || [];
-              
-              let imgHtml = '';
-              if (allImages.length > 0) {
-                  imgHtml = `
-                  <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-                      <div class="carousel-inner">
-                          ${allImages.map((img, index) => `
-                              <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                                  <img src="/uploads/${img}" 
-                                      class="d-block w-100"
-                                      style="height: 300px; object-fit: contain;"
-                                      onerror="this.style.display='none';">
-                              </div>
-                          `).join('')}
-                      </div>
-                      <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-                          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                      </button>
-                      <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-                          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                      </button>
-                  </div>`;
-              } else {
-                  imgHtml = `
-                  <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
-                    <i class="fas fa-car fa-3x text-muted"></i>
-                  </div>`;
-              }
-              $('#modalImages').html(imgHtml);
-              
-              $('#modalAddToCart').toggleClass('disabled', item.quantity <= 0);
-          } else {
-              $('#modalImages').html('<p class="text-center py-5 text-muted">Failed to load product details</p>');
-          }
-      }).fail(function() {
-          $('#modalImages').html('<p class="text-center py-5 text-muted">Error loading product details</p>');
-      });
+            $('#modalItemName').html(`${item.item_name || 'No name available'} ${ecoBadgeHtml}`);
+            
+            $('#modalItemPrice').text(parseFloat(item.sell_price || 0).toFixed(2));
+            $('#modalItemStock').text(`${item.quantity} available`);
+            $('#modalItemStock').removeClass('bg-success bg-danger')
+                .addClass(item.quantity > 0 ? 'bg-success' : 'bg-danger');
+            
+            // Append Eco Description before the normal description
+            $('#modalItemDescription').html(`<strong>Eco Info:</strong> ${ecoDescription}<br><br>${item.description || 'No description available.'}`);
 
-      $.get(`/api/reviews/item/${itemId}`, function (res) {
-          if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
-              if (res.data.length === 0) {
-                  $('#modalReviews').html(`
-                    <div class="text-center py-4">
-                      <i class="fas fa-comment-slash fa-2x text-muted mb-2"></i>
-                      <p class="text-muted">No reviews yet. Be the first to review!</p>
+            const allImages = item.all_images || [];
+            
+            let imgHtml = '';
+            if (allImages.length > 0) {
+                imgHtml = `
+                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        ${allImages.map((img, index) => `
+                            <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                                <img src="/uploads/${img}" 
+                                    class="d-block w-100"
+                                    style="height: 300px; object-fit: contain;"
+                                    onerror="this.style.display='none';">
+                            </div>
+                        `).join('')}
                     </div>
-                  `);
-                  return;
-              }
-
-              const reviewHtml = res.data.map(r => {
-                  const customerName = (r.fname && r.lname) ? `${r.fname} ${r.lname}` : 'Anonymous';
-                  return `
-                      <div class="review-item">
-                          <div class="d-flex justify-content-between align-items-center mb-2">
-                              <div>
-                                  <span class="review-author">${customerName}</span>
-                                  <span class="review-date ms-2">${new Date(r.created_at).toLocaleDateString()}</span>
-                              </div>
-                              <div class="rating">
-                                  ${'<i class="fas fa-star"></i>'.repeat(r.rating)}${'<i class="far fa-star"></i>'.repeat(5 - r.rating)}
-                              </div>
-                          </div>
-                          <p>${r.review_text || 'No review text provided.'}</p>
-                      </div>
-                  `;
-              }).join('');
-
-              $('#modalReviews').html(reviewHtml);
-          }
-      });
-
-      const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
-      modal.show();
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    </button>
+                </div>`;
+            } else {
+                imgHtml = `
+                <div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
+                  <i class="fas fa-car fa-3x text-muted"></i>
+                </div>`;
+            }
+            $('#modalImages').html(imgHtml);
+            
+            $('#modalAddToCart').toggleClass('disabled', item.quantity <= 0);
+        } else {
+            $('#modalImages').html('<p class="text-center py-5 text-muted">Failed to load product details</p>');
+        }
+    }).fail(function() {
+        $('#modalImages').html('<p class="text-center py-5 text-muted">Error loading product details</p>');
     });
+
+    // Load reviews as before...
+    $.get(`/api/reviews/item/${itemId}`, function (res) {
+        if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
+            if (res.data.length === 0) {
+                $('#modalReviews').html(`
+                  <div class="text-center py-4">
+                    <i class="fas fa-comment-slash fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">No reviews yet. Be the first to review!</p>
+                  </div>
+                `);
+                return;
+            }
+
+            const reviewHtml = res.data.map(r => {
+                const customerName = (r.fname && r.lname) ? `${r.fname} ${r.lname}` : 'Anonymous';
+                return `
+                    <div class="review-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="review-author">${customerName}</span>
+                                <span class="review-date ms-2">${new Date(r.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <div class="rating">
+                                ${'<i class="fas fa-star"></i>'.repeat(r.rating)}${'<i class="far fa-star"></i>'.repeat(5 - r.rating)}
+                            </div>
+                        </div>
+                        <p>${r.review_text || 'No review text provided.'}</p>
+                    </div>
+                `;
+            }).join('');
+
+            $('#modalReviews').html(reviewHtml);
+        }
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+    modal.show();
+});
+
 
     $('#modalAddToCart').on('click', function() {
       if (!currentModalItem || $(this).hasClass('disabled')) return;
