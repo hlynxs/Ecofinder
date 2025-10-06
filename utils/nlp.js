@@ -27,24 +27,46 @@ const nonEcoIndicators = [
   "pretends", "not really", "looks good on the shelf"
 ];
 
+function hasKeywordWithNegation(text, keywords) {
+  const words = text.split(/\W+/); // split by non-word chars
+  for (let i = 0; i < words.length; i++) {
+    for (const kw of keywords) {
+      const kwParts = kw.toLowerCase().split(' ');
+      let match = true;
+      for (let j = 0; j < kwParts.length; j++) {
+        if (words[i + j] !== kwParts[j]) {
+          match = false;
+          break;
+        }
+      }
+      if (match) {
+        const prevWord = words[i - 1] || '';
+        if (['not', "n't", 'no'].includes(prevWord)) {
+          continue; // skip if negated
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 async function isEcoFriendly(description) {
   const model = await loadModel();
   const text = description.toLowerCase();
 
-  // Check keywords
-  const hasEco = ecoKeywords.some(k => text.includes(k));
-  const hasNonEco = nonEcoIndicators.some(k => text.includes(k));
+  // Negation-aware checks
+  const hasEco = hasKeywordWithNegation(text, ecoKeywords);
+  const hasNonEco = hasKeywordWithNegation(text, nonEcoIndicators);
 
   // Transformer sentiment/contextual analysis
   const result = await model(description);
-
-  // POSITIVE label = eco-friendly, NEGATIVE label = non eco-friendly
   const isPositive = result[0].label === 'POSITIVE';
 
-  // Logic: if it has tricky negative indicators, treat as non-eco even if positive sentiment
+  // Logic: tricky negatives override positive sentiment
   if (hasNonEco) return 0;
 
-  // Only mark as eco-friendly if positive keywords exist, no negative indicators, and sentiment is positive
+  // Only mark as eco-friendly if positive keywords exist and sentiment is positive
   if (hasEco && isPositive) return 1;
 
   return 0;
