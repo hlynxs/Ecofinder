@@ -22,10 +22,19 @@ const ecoKeywords = [
 
 // Negative/tricky indicators
 const nonEcoIndicators = [
-  "plastic", "synthetic", "polyester", "nylon", "acrylic",
-  "vinyl", "petrochemical", "chemical finish", "coated",
-  "pretends", "not really", "looks good on the shelf"
-];
+  // Plastics & synthetics
+  "plastic", "polyester", "nylon", "acrylic", "vinyl", "polyethylene", "polypropylene", "foam", "synthetic leather", "microplastics", "plasticizer", "pvc",
+  
+  // Chemicals / finishes / treatments
+  "petrochemical", "chemical finish", "coated", "lacquered", "dyed with synthetic dyes", "flame-retardant chemicals",
+  
+  // Non-biodegradable / non-recyclable
+  "non-recyclable", "non-biodegradable", "single-use", "disposable",
+  
+  // Greenwashing / misleading claims
+  "looks good on the shelf", "pretends to be eco", "not really sustainable", "marketing hype", "superficially green",
+  ];
+
 
 function hasKeywordWithNegation(text, keywords) {
   const words = text.split(/\W+/); // split by non-word chars
