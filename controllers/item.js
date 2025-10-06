@@ -61,6 +61,7 @@ const getItemsByCategory = (req, res) => {
       i.item_name, 
       i.sell_price, 
       i.image AS main_image,
+      i.is_eco_friendly,           -- << Add this
       GROUP_CONCAT(ii.image_path) AS extra_images,
       s.quantity AS stock
     FROM item i
@@ -88,14 +89,14 @@ const getItemsByCategory = (req, res) => {
         item_name: row.item_name,
         sell_price: row.sell_price,
         images: all,
-        stock: row.stock || 0
+        stock: row.stock || 0,
+        is_eco_friendly: row.is_eco_friendly   // << Include in response
       };
     });
 
     res.json({ status: 'success', data: formatted });
   });
 };
-
 
 // --------------------
 // ADMIN FUNCTIONS

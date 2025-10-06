@@ -32,12 +32,19 @@ const nonEcoIndicators = [
   "non-recyclable", "non-biodegradable", "single-use", "disposable",
   
   // Greenwashing / misleading claims
-  "looks good on the shelf", "pretends to be eco", "not really sustainable", "marketing hype", "superficially green",
-  ];
+  "looks good on the shelf", "pretends to be eco", "not really sustainable", "marketing hype", "superficially green"
+];
 
+// Eco-friendly materials
+const ecoMaterials = [
+  "bamboo", "cork", "organic cotton", "hemp", "jute", "linen",
+  "reclaimed wood", "rattan", "coir", "rice husk", "soy-based", "plant-based leather",
+  "paper", "cardboard", "natural rubber", "silk", "wool"
+];
 
+// Check for keywords with negation handling
 function hasKeywordWithNegation(text, keywords) {
-  const words = text.split(/\W+/); // split by non-word chars
+  const words = text.split(/\W+/);
   for (let i = 0; i < words.length; i++) {
     for (const kw of keywords) {
       const kwParts = kw.toLowerCase().split(' ');
@@ -60,23 +67,43 @@ function hasKeywordWithNegation(text, keywords) {
   return false;
 }
 
+// Check if any eco-friendly material exists in text
+function hasEcoMaterial(text) {
+  const words = text.toLowerCase().split(/\W+/);
+  for (const mat of ecoMaterials) {
+    const matParts = mat.split(' ');
+    for (let i = 0; i <= words.length - matParts.length; i++) {
+      let match = true;
+      for (let j = 0; j < matParts.length; j++) {
+        if (words[i + j] !== matParts[j]) {
+          match = false;
+          break;
+        }
+      }
+      if (match) return true;
+    }
+  }
+  return false;
+}
+
+// Main function to check if a product description is eco-friendly
 async function isEcoFriendly(description) {
   const model = await loadModel();
   const text = description.toLowerCase();
 
-  // Negation-aware checks
   const hasEco = hasKeywordWithNegation(text, ecoKeywords);
   const hasNonEco = hasKeywordWithNegation(text, nonEcoIndicators);
+  const hasMaterial = hasEcoMaterial(text);
 
-  // Transformer sentiment/contextual analysis
+  // Transformer sentiment analysis
   const result = await model(description);
   const isPositive = result[0].label === 'POSITIVE';
 
-  // Logic: tricky negatives override positive sentiment
+  // Tricky negatives override all
   if (hasNonEco) return 0;
 
-  // Only mark as eco-friendly if positive keywords exist and sentiment is positive
-  if (hasEco && isPositive) return 1;
+  // Eco if positive keywords OR eco-friendly material present AND sentiment positive
+  if ((hasEco || hasMaterial) && isPositive) return 1;
 
   return 0;
 }
