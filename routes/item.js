@@ -9,6 +9,7 @@ const upload = require('../middlewares/upload');
 router.get('/', itemController.getAllItems);
 router.get('/category/:categoryId', itemController.getItemsByCategory);
 router.get('/search/:term', itemController.searchItems);
+router.get('/eco-filter/:isEco', itemController.getItemsByEcoFlag);
 
 
 // ADMIN ROUTES

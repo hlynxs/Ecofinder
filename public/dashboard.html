@@ -338,15 +338,23 @@
 
     <div class="container">
       <h2 class="section-title">EXPLORE OUR COLLECTION</h2>
+<!-- Filter & Search -->
+<div class="filter-container">
+  <div class="row align-items-center">
+    <div class="col-md-8 mb-3 mb-md-0">
 
-      <!-- Filter & Search -->
-      <div class="filter-container">
-        <div class="row align-items-center">
-          <div class="col-md-8 mb-3 mb-md-0">
-            <div id="categoryButtons" class="d-flex flex-wrap">
-              <button class="btn category-btn active" data-id="">All Products</button>
-            </div>
-          </div>
+      <!-- Category Buttons -->
+      <div id="categoryButtons" class="d-flex flex-wrap mb-2">
+        <button class="btn category-btn active" data-id="">All Products</button>
+      </div>
+
+     
+
+    </div>
+  </div>
+</div>
+
+
           <div class="col-md-4">
             <div class="input-group">
               <input type="text" id="searchInput" class="form-control search-box" placeholder="Search models...">
@@ -363,6 +371,8 @@
         <div class="spinner"></div>
         <p class="mt-2">Loading products...</p>
       </div>
+
+       <div id="ecoFilterContainer"></div>
 
       <!-- Product Grid -->
       <div class="row" id="productGrid"></div>
@@ -453,6 +463,67 @@
       return [imageField];
     }
   }
+
+  function renderProducts(items) {
+  let html = '';
+  items.forEach(item => {
+    let images = parseImages(item.images);
+    images = [...new Set(images)];
+    const uniqueCarouselId = `carousel-${item.item_id}`;
+
+    let imageHtml = '';
+    if (images.length === 1) {
+      imageHtml = `<img src="/uploads/${images[0]}" class="card-img-top img-fluid" onerror="this.style.display='none';">`;
+    } else if (images.length > 1) {
+      imageHtml = `
+        <div id="${uniqueCarouselId}" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            ${images.map((img, idx) => `
+              <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                <img src="/uploads/${img}" class="d-block w-100" onerror="this.style.display='none';">
+              </div>
+            `).join('')}
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          </button>
+        </div>`;
+    }
+
+    const ecoBadge = item.is_eco_friendly == 1
+      ? '<span class="badge bg-success me-1"><i class="fas fa-leaf me-1"></i>Eco-Friendly</span>'
+      : '<span class="badge bg-secondary me-1"><i class="fas fa-times me-1"></i>Not Eco-Friendly</span>';
+
+    html += `
+      <div class="col-lg-3 col-md-4 col-sm-6 product-container">
+        <div class="card product-card h-100">
+          ${imageHtml}
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">${item.item_name} ${ecoBadge}</h5>
+            <div class="price mb-2">₱${parseFloat(item.sell_price).toFixed(2)}</div>
+            <div class="stock mb-3 ${item.stock > 0 ? 'text-success' : 'text-danger'}">
+              ${item.stock} available
+            </div>
+            <div class="mt-auto">
+              <button class="btn btn-primary add-to-cart-btn ${item.stock <= 0 ? 'disabled' : ''}"
+                data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
+                <i class="fas fa-cart-plus me-1"></i> Add to Cart
+              </button>
+              <button class="btn btn-outline-secondary mt-2 see-details-btn" data-id="${item.item_id}">
+                <i class="fas fa-eye me-1"></i> View Details
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  $('#productGrid').html(html).fadeIn();
+}
+
 
   function loadItems(categoryId = '', keyword = '') {
     $('#loadingSpinner').show();
@@ -546,24 +617,118 @@ const ecoBadge = item.is_eco_friendly == true || item.is_eco_friendly == 1
     });
   }
 
-  function loadCategories(selectedCategory = '') {
-    $.get('/api/category', function (res) {
-      if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
-        const $container = $('#categoryButtons');
-        $container.html(`
-          <button class="btn category-btn ${selectedCategory === '' ? 'active' : ''}" data-id="">All Products</button>
-        `);
-        res.data.forEach(cat => {
-          const isActive = selectedCategory === cat.category_id ? 'active' : '';
-          $container.append(`
-            <button class="btn category-btn ${isActive}" data-id="${cat.category_id}">
-              ${cat.description}
-            </button>
-          `);
+  function loadItemsByEco(isEco, keyword = '') {
+  $('#loadingSpinner').show();
+  $('#productGrid').hide();
+  $('#emptyState').hide();
+
+  let url = `/api/item/eco-filter/${isEco}`;
+  if (keyword) url += `?search=${encodeURIComponent(keyword)}`;
+
+  $.get(url, function (res) {
+    if (res.status === 'success' || res.success) {
+      const items = res.data || [];
+      if (items.length === 0) {
+        $('#emptyState').show();
+      } else {
+        let html = '';
+        items.forEach(item => {
+          let images = parseImages(item.images);
+          images = [...new Set(images)];
+
+          const uniqueCarouselId = `carousel-${item.item_id}`;
+          let imageHtml = '';
+
+          if (images.length === 1) {
+            imageHtml = `<img src="/uploads/${images[0]}" class="card-img-top img-fluid" onerror="this.style.display='none';">`;
+          } else if (images.length > 1) {
+            imageHtml = `
+              <div id="${uniqueCarouselId}" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  ${images.map((img, idx) => `
+                    <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                      <img src="/uploads/${img}" class="d-block w-100" onerror="this.style.display='none';">
+                    </div>
+                  `).join('')}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#${uniqueCarouselId}" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </button>
+              </div>`;
+          }
+
+          const ecoBadge = item.is_eco_friendly == 1
+            ? '<span class="badge bg-success me-1"><i class="fas fa-leaf me-1"></i>Eco-Friendly</span>'
+            : '<span class="badge bg-secondary me-1"><i class="fas fa-times me-1"></i>Not Eco-Friendly</span>';
+
+          html += `
+            <div class="col-lg-3 col-md-4 col-sm-6 product-container">
+              <div class="card product-card h-100">
+                ${imageHtml}
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title">${item.item_name} ${ecoBadge}</h5>
+                  <div class="price mb-2">₱${parseFloat(item.sell_price).toFixed(2)}</div>
+                  <div class="stock mb-3 ${item.stock > 0 ? 'text-success' : 'text-danger'}">
+                    ${item.stock} available
+                  </div>
+                  <div class="mt-auto">
+                    <button class="btn btn-primary add-to-cart-btn ${item.stock <= 0 ? 'disabled' : ''}"
+                      data-id="${item.item_id}" data-name="${item.item_name}" data-price="${item.sell_price}">
+                      <i class="fas fa-cart-plus me-1"></i> Add to Cart
+                    </button>
+                    <button class="btn btn-outline-secondary mt-2 see-details-btn" data-id="${item.item_id}">
+                      <i class="fas fa-eye me-1"></i> View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>`;
         });
+        $('#productGrid').html(html).fadeIn();
       }
-    });
-  }
+    } else {
+      $('#emptyState').show();
+    }
+  }).fail(() => {
+    $('#emptyState').show();
+  }).always(() => {
+    $('#loadingSpinner').hide();
+  });
+}
+
+
+  function loadCategories(selectedCategory = '') {
+  $.get('/api/category', function (res) {
+    if ((res.success || res.status === 'success') && Array.isArray(res.data)) {
+      const $container = $('#categoryButtons');
+      $container.html(`
+        <button class="btn category-btn ${selectedCategory === '' ? 'active' : ''}" data-id="">All Products</button>
+      `);
+
+      res.data.forEach(cat => {
+        const isActive = selectedCategory === cat.category_id ? 'active' : '';
+        $container.append(`
+          <button class="btn category-btn ${isActive}" data-id="${cat.category_id}">
+            ${cat.description}
+          </button>
+        `);
+      });
+
+      // ✅ Add separate Eco filter buttons below category list
+    $('#ecoFilterContainer').html(`
+  <div class="d-flex justify-content-center my-3 gap-2">
+    <button class="btn btn-outline-success eco-btn" data-eco="1">Eco-Friendly</button>
+    <button class="btn btn-outline-danger eco-btn" data-eco="0">Not Eco-Friendly</button>
+  </div>
+`);
+
+    }
+  });
+}
+
 
   function updateCartCount() {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -602,32 +767,114 @@ const ecoBadge = item.is_eco_friendly == true || item.is_eco_friendly == 1
     loadItems();
     loadCategories();
 
-    $(document).on('click', '.category-btn', function () {
-      $('.category-btn').removeClass('active');
-      $(this).addClass('active');
-      const categoryId = $(this).data('id');
-      const keyword = $('#searchInput').val().trim();
-      loadItems(categoryId, keyword);
-    });
+  $(document).on('click', '.category-btn', function () {
+  $('.category-btn').removeClass('active');
+  $(this).addClass('active');
 
-    $('#searchBtn').on('click', function () {
-      const keyword = $('#searchInput').val().trim();
-      const activeCategory = $('.category-btn.active').data('id') || '';
-      loadItems(activeCategory, keyword);
-    });
-    
-    $('#searchInput').on('keypress', function(e) {
-      if (e.which === 13) {
-        $('#searchBtn').click();
+  const categoryId = $(this).data('id');
+  const keyword = $('#searchInput').val().trim();
+
+  // Load items for this category
+  loadItems(categoryId, keyword);
+
+  // Show eco filter buttons for the selected category
+  showEcoFilterButtons(categoryId);
+});
+
+// When eco-friendly or not eco-friendly button is clicked
+function showEcoFilterButtons(categoryId) {
+  const $filterContainer = $('#ecoFilterContainer');
+  if (!categoryId) {
+    $filterContainer.html(''); // no category → clear buttons
+    return;
+  }
+
+  $filterContainer.html(`
+    <div class="d-flex justify-content-center my-3 gap-2">
+      <button class="btn btn-outline-success eco-btn" data-category="${categoryId}" data-eco="1">
+         Eco-Friendly
+      </button>
+      <button class="btn btn-outline-danger eco-btn" data-category="${categoryId}" data-eco="0">
+         Not Eco-Friendly
+      </button>
+    </div>
+  `);
+}
+
+$(document).on('click', '.eco-btn', function () {
+  const ecoFlag = $(this).data('eco'); // 1, 0, or 'all'
+  const categoryId = $('.category-btn.active').data('id') || '';
+
+  $('.eco-btn').removeClass('active');
+  $(this).addClass('active');
+
+  $('#loadingSpinner').show();
+  $('#productGrid').hide();
+  $('#emptyState').hide();
+
+  let url = '';
+
+  // Case 1: show all eco/non-eco products
+  if (ecoFlag === 'all') {
+    url = categoryId ? `/api/item/category/${categoryId}` : `/api/item/`;
+  }
+  // Case 2: filter by eco-friendly flag
+  else {
+    url = `/api/item/eco-filter/${ecoFlag}`;
+    if (categoryId) url += `?category=${categoryId}`;
+  }
+
+  $.get(url, function (res) {
+    if (res.status === 'success' && Array.isArray(res.data)) {
+      if (res.data.length > 0) {
+        renderProducts(res.data);
+      } else {
+        const message =
+          ecoFlag == 1
+            ? '<p class="text-center text-muted mt-3">No eco-friendly products found.</p>'
+            : ecoFlag == 0
+            ? '<p class="text-center text-muted mt-3">No non-eco-friendly products found.</p>'
+            : '<p class="text-center text-muted mt-3">No products found.</p>';
+        $('#productGrid').html(message);
       }
+    } else {
+      $('#productGrid').html('<p class="text-center text-danger mt-3">Error loading products.</p>');
+    }
+  })
+    .fail(() => {
+      $('#productGrid').html('<p class="text-center text-danger mt-3">Error loading products.</p>');
+    })
+    .always(() => {
+      $('#loadingSpinner').hide();
+      $('#productGrid').show();
     });
+});
 
-    $('#resetFilters').on('click', function() {
-      $('.category-btn').removeClass('active');
-      $('.category-btn[data-id=""]').addClass('active');
-      $('#searchInput').val('');
-      loadItems();
-    });
+
+
+
+// Search button
+$('#searchBtn').on('click', function () {
+  const keyword = $('#searchInput').val().trim();
+  const activeCategory = $('.category-btn.active').data('id') || '';
+  const activeEco = $('.eco-filter-btn.active').data('eco');
+
+  if (activeEco !== undefined) {
+    loadItemsByEco(activeEco, keyword);
+  } else {
+    loadItems(activeCategory, keyword);
+  }
+});
+
+// Reset filters
+$('#resetFilters').on('click', function () {
+  $('.category-btn').removeClass('active');
+  $('.eco-filter-btn').removeClass('active');
+  $('.category-btn[data-id=""]').addClass('active');
+  $('#searchInput').val('');
+  loadItems();
+});
+
 
     $(document).on('click', '.add-to-cart-btn', function () {
       const token = localStorage.getItem('token');

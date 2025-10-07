@@ -419,6 +419,62 @@ const getItemsPaginated = (req, res) => {
     res.status(200).json({ data: formatted });
   });
 };
+
+const getItemsByEcoFlag = (req, res) => {
+  const isEco = req.params.isEco; // 1 or 0
+  const categoryId = req.query.category || ''; // optional query param
+
+  let sql = `
+    SELECT 
+      i.item_id,
+      i.item_name,
+      i.sell_price,
+      i.image AS main_image,
+      GROUP_CONCAT(ii.image_path) AS extra_images,
+      s.quantity AS stock,
+      i.is_eco_friendly
+    FROM item i
+    LEFT JOIN item_images ii ON i.item_id = ii.item_id
+    LEFT JOIN stock s ON i.item_id = s.item_id
+    WHERE i.deleted_at IS NULL
+      AND i.is_eco_friendly = ?
+  `;
+
+  const params = [isEco];
+
+  if (categoryId) {
+    sql += ' AND i.category_id = ?';
+    params.push(categoryId);
+  }
+
+  sql += `
+    GROUP BY i.item_id
+    ORDER BY i.item_name ASC
+  `;
+
+  db.query(sql, params, (err, results) => {
+    if (err) {
+      console.error('SQL Error:', err.message);
+      return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+
+    const formatted = results.map(row => {
+      const extra = row.extra_images ? row.extra_images.split(',') : [];
+      const all = [row.main_image, ...extra].filter(Boolean);
+      return {
+        item_id: row.item_id,
+        item_name: row.item_name,
+        sell_price: row.sell_price,
+        images: all,
+        stock: row.stock || 0,
+        is_eco_friendly: row.is_eco_friendly
+      };
+    });
+
+    res.json({ status: 'success', data: formatted });
+  });
+};
+
   
 
 
@@ -435,6 +491,7 @@ module.exports = {
   restoreItem ,
   getAllItemsIncludingDeleted,
   searchItems,
-  getItemsPaginated                
+  getItemsPaginated,
+  getItemsByEcoFlag                
 };
 
